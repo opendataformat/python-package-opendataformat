@@ -1,9 +1,9 @@
 LICENSE
 README.md
 setup.py
-odf/__init__.py
-odf/odf2pd.py
-odf/pd2odf.py
+opendataformat/__init__.py
+opendataformat/odf2pd.py
+opendataformat/pd2odf.py
 opendataformat.egg-info/PKG-INFO
 opendataformat.egg-info/SOURCES.txt
 opendataformat.egg-info/dependency_links.txt
