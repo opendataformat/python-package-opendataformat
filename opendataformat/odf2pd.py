@@ -10,7 +10,7 @@ Created on Mon Oct 21 12:24:04 2024
 import pandas as pd
 import zipfile
 import xml.etree.ElementTree as ET
-
+import os
 
 def get_lang(root,xpath):
     lang = []
@@ -21,115 +21,227 @@ def get_lang(root,xpath):
     return lang
 
 def make_dataset_dic(root):        
-    header = ['study','dataset']
-    # labels
-    for i in get_lang(root,'.//fileDscr/fileTxt/fileCitation/titlStmt/titl'):
-        header.append('label_'+i)
-    # descriptions
-    for i in get_lang(root,'.//fileDscr/fileTxt/fileCont'):
-        header.append('description_'+i)
-    # url
-    header.append('url')
-        
-    dictionary = {key:"" for key in header}
-    # dataset
+    dictionary = {}  # Initialize the dictionary to store label entries
+    #study and dataset name
     dictionary['study'] = root.findtext(".//stdyDscr/citation/titlStmt/titl")
     dictionary['dataset'] = root.findtext(".//fileDscr/fileTxt/fileName")
     # labels
-    for i in root.findall('.//fileDscr/fileTxt/fileCitation/titlStmt/titl'):
-        for lang in get_lang(root,'.//fileDscr/fileTxt/fileCitation/titlStmt/titl'):
-            if i.get('{http://www.w3.org/XML/1998/namespace}lang') == lang:
-                dictionary['label_'+lang] = i.text
-    # description
-    for i in root.findall('.//fileDscr/fileTxt/fileCont'):
-        for lang in get_lang(root,'.//fileDscr/fileTxt/fileCont'):
-            if i.get('{http://www.w3.org/XML/1998/namespace}lang') == lang:
-                dictionary['description_'+lang] = i.text
-    # url
-    for i in root.findall('.//fileDscr/notes/ExtLink'):
-        dictionary['url'] = i.get('URI')
+    titl_stmt = root.find('.//fileDscr/fileTxt/fileCitation/titlStmt')
+    if titl_stmt is not None:
+        # Loop through each child element in titlStmt
+        for elem in titl_stmt:
+            # Check if there is a language attribute
+            lang = elem.get('{http://www.w3.org/XML/1998/namespace}lang')
+            if lang:
+                # Store text with 'label_<language>' key if lang attribute exists
+                dictionary[f'label_{lang}'] = elem.text
+            else:
+                # Store text with 'label' key if no lang attribute exists
+                dictionary['label'] = elem.text
+    # Process descriptions in fileCont
+    for file_cont in root.findall('.//fileDscr/fileTxt/fileCont'):
+        lang = file_cont.get('{http://www.w3.org/XML/1998/namespace}lang')
+        if lang:
+            dictionary[f'description_{lang}'] = file_cont.text
+        else:
+            dictionary['description'] = file_cont.text
+    #URL
+    ExtLink = root.findall('.//fileDscr/notes/ExtLink')
+    if len(ExtLink) == 1:
+        ExtLink[0].get('URI')
+
+    
     return dictionary
 
-def make_variables_dic(root):        
+def make_variables_dic(root, variables):        
     dictionaries={}
-    header = ['variable']
-    # labels
-    for i in get_lang(root,'.//dataDscr/var/labl'):
-        header.append('label_'+i)
-    # type
-    header.append('type')
-    # descriptions
-    for i in get_lang(root,'.//dataDscr/var/txt'):
-        header.append('description_'+i)
-    # url
-    header.append('url')
-
+    
     for var in root.findall('.//dataDscr/var'):
+        varname = var.attrib.get('name')
+        if varname not in variables:
+            continue
         # dictionary
-        dictionary = {key:"" for key in header}
+        dictionary = {}
         # variable
         dictionary['variable'] = var.attrib.get('name')
-        # labels
-        for i in var.findall('labl'):
-            for lang in get_lang(root,'.//dataDscr/var/labl'):
-                if i.get('{http://www.w3.org/XML/1998/namespace}lang') == lang:
-                    dictionary['label_'+lang] = i.text
-        # type
-        for i in var.findall('varFormat'):
-            dictionary['type'] = (i.attrib.get('type'))
-        # descriptions
-        for i in var.findall('txt'):
-            for lang in get_lang(root,'.//dataDscr/var/txt'):
-                if i.get('{http://www.w3.org/XML/1998/namespace}lang') == lang:
-                    dictionary['description_'+lang]=i.text
-        # url
-        for i in var.findall('.//notes/ExtLink'):
-            dictionary['url']=i.get('URI')
-
-        for i in get_lang(root,'.//dataDscr/var/catgry/labl'):
-            dictionary['labels_'+i]={}
-        #check all availible language labels, and for each language:
-            for cat in var.findall('catgry'):
-                cat_value = cat.find('catValu').text
-                for l in cat.findall('labl'):
-                    if l.get ('{http://www.w3.org/XML/1998/namespace}lang')==i:               
-                        dictionary['labels_'+i][cat_value] = l.text  
         
-        #dictionary['label_'+i]= dict(value, value_labels)
-        dictionaries[dictionary['variable']]=dictionary
-        #pd.attrs[dictionary['variable']]=dictionary
+        
+        # Process `labl` elements
+        for labl_elem in var.findall('labl'):
+            # Check if there is a language attribute
+            lang = labl_elem.get('{http://www.w3.org/XML/1998/namespace}lang')
+            if lang:
+                # Store text with 'label_<language>' key if lang attribute exists
+                dictionary[f'label_{lang}'] = labl_elem.text
+            else:
+                # Store text with 'label' key if no lang attribute exists
+                dictionary['label'] = labl_elem.text
+        
+        # Process `txt` elements
+        for txt_elem in var.findall('txt'):
+            # Check if there is a language attribute
+            lang = txt_elem.get('{http://www.w3.org/XML/1998/namespace}lang')
+            if lang:
+                # Store text with 'description_<language>' key if lang attribute exists
+                dictionary[f'description_{lang}'] = txt_elem.text
+            else:
+                # Store text with 'description' key if no lang attribute exists
+                dictionary['description'] = txt_elem.text
+        
+        # Process `catgry` elements to accumulate labels by language
+        for catgry_elem in var.findall('catgry'):
+            # Get the category value
+            catValu_elem = catgry_elem.find('catValu')
+            if catValu_elem is not None:
+                cat_value = catValu_elem.text
+            else:
+                continue  # Skip if there's no category value
+    
+            # Loop through `labl` elements within `catgry`
+            for labl_elem in catgry_elem.findall('labl'):
+                lang = labl_elem.get('{http://www.w3.org/XML/1998/namespace}lang', 'default')
+                # Construct the key for labels by language (e.g., 'labels_en', 'labels_de')
+                labels_key = f'labels_{lang}' if lang != 'default' else 'labels'
+                
+                # Initialize the dictionary for this language if not already present
+                if labels_key not in dictionary:
+                    dictionary[labels_key] = {}
+                
+                # Add the category value and corresponding label to the dictionary for the language
+                dictionary[labels_key][cat_value] = labl_elem.text
+        
+        # Process `varFormat` for type
+        varFormat_elem = var.find('varFormat')
+        if varFormat_elem is not None:
+            dictionary['format_type'] = varFormat_elem.get('type')
+        
+        # Process `ExtLink` for external URL
+        extLink_elem = var.find('.//notes/ExtLink')
+        if extLink_elem is not None:
+            dictionary['url'] = extLink_elem.get('URI')
+        
+        dictionaries[varname] = dictionary
+        
     return dictionaries
       
 
 
-def read_odf(path):
-    if not path.endswith(".zip"):
+def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None, na_values = None):
+    # if path has not suffix .zip" but a ".zip" file exists, .zip" is added to path
+    # if no file zipped file exists, but a folder with the name exists, the function tries to read
+    if (not path.endswith(".zip") and not os.path.exists(path)) or (not path.endswith(".zip") and os.path.exists(path + ".zip")) :
         path = path + ".zip"
 
-    # Open zip data and xml file in it   
-    with zipfile.ZipFile(path, 'r') as zip_ref:      
-        root=ET.fromstring(zip_ref.read('metadata.xml'))
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"The file {path} was not found.")
+    
+    if not path.endswith(".zip") and (not os.path.exists(path + "data.csv") or not os.path.exists(path + "metadata.xml")):
+        raise FileNotFoundError(f"A file {path + '.zip'} was not found and in the folder {path} expected metadata.xml and data.csv.")
+    
+    if '.zip' not in path:
+        file_not_zipped = True
+    else:
+        file_not_zipped = False
 
-        # Iterate through the tags in xml and remove prefix of each tag
+
+    if file_not_zipped == False:
+        # Open zip data and xml file in it   
+        with zipfile.ZipFile(path, 'r') as zip_ref:    
+            if 'data.csv' not in zip_ref.namelist():
+                    raise Exception(f"Expected data.csv in {path}")
+            if 'metadata.xml' not in zip_ref.namelist():
+                    raise Exception(f"Expected metadata.xml in {path}")
+            try:
+                root=ET.fromstring(zip_ref.read('metadata.xml'))
+            except Exception as e:
+                raise Exception(f"{type(e).__name__} in reading metadata.xml in {path}. Check the xml file in the data file")
+            
+            # Iterate through the tags in xml and remove prefix of each tag
+            for i in root.iter():
+                i.tag=i.tag.split('}')[-1]
+                #print(i.tag)
+
+
+
+            if languages != "all":
+                if type(languages) == str:
+                    languages = [languages]
+                for key in dataset_dic.keys():
+                    if 'label_' in key or 'description_' in key:
+                        if key.split("_")[1] not in languages:
+                            dataset_dic.pop(key)
+                for varname in variables_dic.keys():
+                    var_dic = variables_dic[varname]
+                    for key in var_dic.keys():
+                        if 'label_' in key or 'labels_' in key or 'description_' in key:
+                            if key.split("_")[1] not in languages:
+                                var_dic.pop(key)
+                        variables_dic[varname] = var_dic
+            
+            # Save the dictionaries to pandas dataframe
+            with zip_ref.open('data.csv') as csv_file:            
+                try:
+                    if (skiprows != None):
+                        if (type(skiprows) == int):
+                            skiprows = list(range(skiprows))
+                        skiprows = [x + 1 for x in skiprows]
+                    df = pd.DataFrame(data=pd.read_csv(csv_file, encoding='UTF-8', usecols = usecols, skiprows=skiprows, nrows=nrows, na_values = na_values))
+                except Exception as e:
+                    raise Exception(f"{type(e).__name__} in reading data.csv in {path}. Check the CSV file.")
+                
+                # Make dataset dictionary
+                dataset_dic=make_dataset_dic(root)
+                
+                # Make variables dictionary
+                variables_dic=make_variables_dic(root, variables =  list(df.columns))
+                
+                
+                df.attrs=dataset_dic
+                for var_name, attributes in variables_dic.items():
+                    if var_name in df.columns:
+                        df[var_name].attrs=attributes
+    elif file_not_zipped == True:
+        metadata_path = os.path.join(path, 'metadata.xml')
+        data_csv_path = os.path.join(path, 'data.csv')
+
+        # Ensure files exist
+        if not os.path.exists(metadata_path) or not os.path.exists(data_csv_path):
+            raise ValueError("Expected metadata.xml and data.csv in {path}")
+
+        # Parse metadata.xml directly
+        try:
+            tree = ET.parse(metadata_path)
+        except Exception as e:
+            raise Exception(f"{type(e).__name__} in reading metadata.xml in {path}. Check the xml file in the data file")
+
+        root = tree.getroot()
+
+        # Process XML tags
         for i in root.iter():
-            i.tag=i.tag.split('}')[-1]
-            #print(i.tag)
+            i.tag = i.tag.split('}')[-1]
 
+
+        # Load data.csv from folder and save dictionaries to DataFrame
+        try:
+            if (skiprows != None):
+                if (type(skiprows) == int):
+                    skiprows = list(range(skiprows))
+                skiprows = [x + 1 for x in skiprows]
+            df = pd.read_csv(data_csv_path, encoding='UTF-8', usecols = usecols, skiprows=skiprows, nrows=nrows, na_values = na_values)
+        except Exception as e:
+            raise Exception(f"{type(e).__name__} in reading data.csv in {path}. Check the CSV file.")
+        
         # Make dataset dictionary
         dataset_dic=make_dataset_dic(root)
-        #print(dataset_dic)
-
+        
         # Make variables dictionary
-        variables_dic=make_variables_dic(root)
-        #for i in variables_dic:
-        #print(variables_dic['hgeqpnrj'])
-
-        # Save the dictionaries to pandas dataframe
-        with zip_ref.open('data.csv') as csv_file:            
-            df= pd.DataFrame(data=pd.read_csv(csv_file,encoding='UTF-8'))
-            df.attrs=dataset_dic
-            for i in variables_dic.keys():
-                df[i].attrs=variables_dic[i]
+        variables_dic=make_variables_dic(root, variables =  list(df.columns))
+        
+        
+        df.attrs = dataset_dic
+        for var_name, attributes in variables_dic.items():
+            if var_name in df.columns:
+                df[var_name].attrs=attributes
     return df
         
 
