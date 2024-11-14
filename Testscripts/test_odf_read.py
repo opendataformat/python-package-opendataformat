@@ -19,8 +19,9 @@ import os
 
 os.chdir('C:/Users/thartl/OneDrive - DIW Berlin/Open Data Format Project/Python/python-package-opendataformat/Testscripts')
 
-df = odf.read_odf('testdata/data.zip')
-
+df = odf.read_odf('testdata/data.zip', languages = "de")
+#df = read_odf(path = 'C:/Users/thartl/Documents/data', languages = "de")
+#C:\Users\thartl\OneDrive - DIW Berlin\Open Data Format Project\R\R-Packages\r-package-opendataformat\tests\testthat\testdata\csv\data
 #import odf  # Assuming the odf module has the read_odf function
 
 class TestReadODF(unittest.TestCase):

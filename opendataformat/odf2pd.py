@@ -134,7 +134,7 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
     if not os.path.exists(path):
         raise FileNotFoundError(f"The file {path} was not found.")
     
-    if not path.endswith(".zip") and (not os.path.exists(path + "data.csv") or not os.path.exists(path + "metadata.xml")):
+    if not path.endswith(".zip") and (not os.path.exists(path + "/data.csv") or not os.path.exists(path + "/metadata.xml")):
         raise FileNotFoundError(f"A file {path + '.zip'} was not found and in the folder {path} expected metadata.xml and data.csv.")
     
     if '.zip' not in path:
@@ -242,20 +242,27 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
         # Make variables dictionary
         variables_dic=make_variables_dic(root, variables =  list(df.columns))
         
+        #remove languages that are not needed
         if languages != "all":
             if type(languages) == str:
                 languages = [languages]
+            keys_wrong_language = []
             for key in dataset_dic.keys():
                 if 'label_' in key or 'description_' in key:
                     if key.split("_")[1] not in languages:
-                        dataset_dic.pop(key)
+                        keys_wrong_language.append(key)
+            for key in keys_wrong_language:
+                dataset_dic.pop(key)
             for varname in variables_dic.keys():
                 var_dic = variables_dic[varname]
+                keys_wrong_language = []
                 for key in var_dic.keys():
                     if 'label_' in key or 'labels_' in key or 'description_' in key:
                         if key.split("_")[1] not in languages:
-                            var_dic.pop(key)
-                    variables_dic[varname] = var_dic
+                            keys_wrong_language.append(key)
+                for key in keys_wrong_language:    
+                    var_dic.pop(key)
+                variables_dic[varname] = var_dic
                     
         df.attrs = dataset_dic
         for var_name, attributes in variables_dic.items():
