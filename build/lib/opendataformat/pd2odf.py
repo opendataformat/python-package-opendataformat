@@ -73,11 +73,10 @@ def write_odf(x, path):
     # Remove the directory if it already exists
     if os.path.exists(temp_subdir):
         shutil.rmtree(temp_subdir)
-        print(f"Removed existing directory: {temp_subdir}")
 
     # Create the directory
     os.makedirs(temp_subdir, exist_ok=True)
-    print(f"Created directory: {temp_subdir}")
+
 
     # write raw data as csv to the output folder
     x.to_csv(temp_dir + "/" + filename.split('.')[0] + "/data.csv", index = False)
@@ -115,7 +114,6 @@ def write_odf(x, path):
         labels_reordered.update(labels)
         labels = labels_reordered.copy()
         
-    print(labels)
     first_label = True
     for key,value in labels.items():   
         if (len(key.split("_"))==1):
@@ -156,12 +154,11 @@ def write_odf(x, path):
     # Add external link to the dataset
     notes = ET.SubElement(fileDscr, "notes")
     ET.SubElement(notes, "ExtLink", {"URI": x.attrs.get('url', "")})
-    print("test2")
+
 
     # Add data description with variable Metadata
     dataDscr = ET.SubElement(root, "dataDscr")
     for col in list(x.columns):
-        print(col)
         var = ET.SubElement(dataDscr, "var", {"name": col})
         if x[col].attrs == x.attrs:
             continue
@@ -225,10 +222,8 @@ def write_odf(x, path):
         labelled_values = list(set(labelled_values))
         
         for val in labelled_values:   
-            print(val)
             catgry = ET.SubElement(var, "catgry")
             ET.SubElement(catgry, "catValu").text = val
-            print('test2')
             for key, value in valuelabels.items():
                 if (len(key.split("_"))==1):
                     lang = "NA"
@@ -252,8 +247,7 @@ def write_odf(x, path):
     # Write the XML structure to a file
     tree.write(temp_dir + "/" + filename.split('.')[0] + "/metadata.xml", encoding='utf-8', xml_declaration=True)
     
-    print("XML file 'metadata.xml' has been created.")
-    print("test3")
+
     dataset_dir = os.path.join(temp_dir, filename.split('.')[0])
     zip_path = os.path.join(path)
 
@@ -262,7 +256,7 @@ def write_odf(x, path):
         zipf.write(os.path.join(dataset_dir, 'metadata.xml'), arcname='metadata.xml')
         zipf.write(os.path.join(dataset_dir, 'data.csv'), arcname='data.csv')
 
-    print(f"Created zip archive at {zip_path}")
+    print(f"File sucessfully written to {zip_path}.")
     
     
     
