@@ -4,7 +4,6 @@ setup.py
 opendataformat/__init__.py
 opendataformat/docu_odf.py
 opendataformat/odf2pd.py
-opendataformat/odf2pd_v1.py
 opendataformat/pd2odf.py
 opendataformat.egg-info/PKG-INFO
 opendataformat.egg-info/SOURCES.txt

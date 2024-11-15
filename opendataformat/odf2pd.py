@@ -12,13 +12,7 @@ import zipfile
 import xml.etree.ElementTree as ET
 import os
 
-#def get_lang(root,xpath):
-#    lang = []
-#    for ele in root.findall(xpath):
-#        lang.append(ele.get('{http://www.w3.org/XML/1998/namespace}lang'))
-#
-#    lang = set(list(filter(None, lang)))
-#    return lang
+
 
 def make_dataset_dic(root):        
     dictionary = {}  # Initialize the dictionary to store label entries

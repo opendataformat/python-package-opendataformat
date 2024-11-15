@@ -6,13 +6,9 @@ Created on Thu Nov 14 17:12:37 2024
 """
 
 import pandas as pd
-import os
 
 
 def docu_odf(x, metadata = "all", languages = "all"):
-    
-    
-    
     if not isinstance(x, (pd.DataFrame, pd.Series)):
         TypeError('x is not a pandas data frame or a columns of a pandas data frame')
         
@@ -29,10 +25,6 @@ def docu_odf(x, metadata = "all", languages = "all"):
     
     if languages != "all" and not isinstance(languages, list):
         raise ValueError("languages  not valid")
-    #if languages != "all":
-    #    if not any([f"_{languages}" in key for key in x.attrs.keys()]):
-    #        print (f"No metadata found for x in language(s) {languages}")
-    #        return
 
     if metadata=='all':
         for key, value in x.attrs.items():
