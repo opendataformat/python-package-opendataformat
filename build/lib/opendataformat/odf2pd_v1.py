@@ -12,13 +12,13 @@ import zipfile
 import xml.etree.ElementTree as ET
 import os
 
-#def get_lang(root,xpath):
-#    lang = []
-#    for ele in root.findall(xpath):
-#        lang.append(ele.get('{http://www.w3.org/XML/1998/namespace}lang'))
-#
-#    lang = set(list(filter(None, lang)))
-#    return lang
+def get_lang(root,xpath):
+    lang = []
+    for ele in root.findall(xpath):
+        lang.append(ele.get('{http://www.w3.org/XML/1998/namespace}lang'))
+
+    lang = set(list(filter(None, lang)))
+    return lang
 
 def make_dataset_dic(root):        
     dictionary = {}  # Initialize the dictionary to store label entries
@@ -48,8 +48,9 @@ def make_dataset_dic(root):
     #URL
     ExtLink = root.findall('.//fileDscr/notes/ExtLink')
     if len(ExtLink) == 1:
-        dictionary['url'] = ExtLink[0].get('URI')
+        ExtLink[0].get('URI')
 
+    
     return dictionary
 
 def make_variables_dic(root, variables):        
@@ -112,7 +113,7 @@ def make_variables_dic(root, variables):
         # Process `varFormat` for type
         varFormat_elem = var.find('varFormat')
         if varFormat_elem is not None:
-            dictionary['type'] = varFormat_elem.get('type')
+            dictionary['format_type'] = varFormat_elem.get('type')
         
         # Process `ExtLink` for external URL
         extLink_elem = var.find('.//notes/ExtLink')
@@ -128,13 +129,14 @@ def make_variables_dic(root, variables):
 def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None, na_values = None):
     # if path has not suffix .zip" but a ".zip" file exists, .zip" is added to path
     # if no file zipped file exists, but a folder with the name exists, the function tries to read
+    
     if (not path.endswith(".zip") and not os.path.exists(path)) or (not path.endswith(".zip") and os.path.exists(path + ".zip")) :
         path = path + ".zip"
 
     if not os.path.exists(path):
         raise FileNotFoundError(f"The file {path} was not found.")
     
-    if not path.endswith(".zip") and (not os.path.exists(path + "/data.csv") or not os.path.exists(path + "/metadata.xml")):
+    if not path.endswith(".zip") and (not os.path.exists(path + "data.csv") or not os.path.exists(path + "metadata.xml")):
         raise FileNotFoundError(f"A file {path + '.zip'} was not found and in the folder {path} expected metadata.xml and data.csv.")
     
     if '.zip' not in path:
@@ -159,51 +161,43 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
             for i in root.iter():
                 i.tag=i.tag.split('}')[-1]
                 #print(i.tag)
-            #read the csv file
+         
+            # Save the dictionaries to pandas dataframe
             with zip_ref.open('data.csv') as csv_file:            
-                if (skiprows != None):
-                    if (type(skiprows) == int):
-                        skiprows = list(range(skiprows))
-                    skiprows = [x + 1 for x in skiprows]
-                df = pd.read_csv(csv_file, encoding='UTF-8', usecols = usecols, skiprows=skiprows, nrows=nrows, na_values = na_values)
-                if usecols != None and all(isinstance(item, str) for item in usecols):
-                    df = df[usecols]
+                try:
+                    if (skiprows != None):
+                        if (type(skiprows) == int):
+                            skiprows = list(range(skiprows))
+                        skiprows = [x + 1 for x in skiprows]
+                    df = pd.DataFrame(data=pd.read_csv(csv_file, encoding='UTF-8', usecols = usecols, skiprows=skiprows, nrows=nrows, na_values = na_values))
+                except Exception as e:
+                    raise Exception(f"{type(e).__name__} in reading data.csv in {path}. Check the CSV file.")
+                
+                # Make dataset dictionary
+                dataset_dic=make_dataset_dic(root)
+                
+                # Make variables dictionary
+                variables_dic=make_variables_dic(root, variables =  list(df.columns))
 
-                
-                
-            # Make dataset dictionary
-            dataset_dic=make_dataset_dic(root)
-                
-            # Make variables dictionary
-            variables_dic=make_variables_dic(root, variables =  list(df.columns))
-                
-            #remove languages that are not needed
-            if languages != "all":
-                if type(languages) == str:
-                    languages = [languages]
-                keys_wrong_language = []
-                for key in dataset_dic.keys():
-                    if 'label_' in key or 'description_' in key:
-                        if key.split("_")[1] not in languages:
-                            keys_wrong_language.append(key)
-                for key in keys_wrong_language:
-                    dataset_dic.pop(key)
-                for varname in variables_dic.keys():
-                    var_dic = variables_dic[varname]
-                    keys_wrong_language = []
-                    for key in var_dic.keys():
-                        if 'label_' in key or 'labels_' in key or 'description_' in key:
+                if languages != "all":
+                    if type(languages) == str:
+                        languages = [languages]
+                    for key in list(dataset_dic):
+                        if 'label_' in key or 'description_' in key:
                             if key.split("_")[1] not in languages:
-                                keys_wrong_language.append(key)
-                    for key in keys_wrong_language:    
-                        var_dic.pop(key)
-                    variables_dic[varname] = var_dic
-
-            df.attrs=dataset_dic
-            for var_name, attributes in variables_dic.items():
-                if var_name in df.columns:
-                    df[var_name].attrs=attributes
-                    
+                                dataset_dic.pop(key)
+                    for varname in (variables_dic):
+                        var_dic = variables_dic[varname]
+                        for key in list(var_dic):
+                            if 'label_' in key or 'labels_' in key or 'description_' in key:
+                                if key.split("_")[1] not in languages:
+                                    var_dic.pop(key)
+                            variables_dic[varname] = var_dic
+                
+                df.attrs=dataset_dic
+                for var_name, attributes in variables_dic.items():
+                    if var_name in df.columns:
+                        df[var_name].attrs=attributes
     elif file_not_zipped == True:
         metadata_path = os.path.join(path, 'metadata.xml')
         data_csv_path = os.path.join(path, 'data.csv')
@@ -226,44 +220,17 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
 
 
         # Load data.csv from folder and save dictionaries to DataFrame
-
-        if (skiprows != None):
-            if (type(skiprows) == int):
-                skiprows = list(range(skiprows))
-            skiprows = [x + 1 for x in skiprows]
-        df = pd.read_csv(data_csv_path, encoding='UTF-8', usecols = usecols, skiprows=skiprows, nrows=nrows, na_values = na_values)
-        if usecols != None and all(isinstance(item, str) for item in usecols):
-            df = df[usecols]
-
+        try:
+            if (skiprows != None):
+                if (type(skiprows) == int):
+                    skiprows = list(range(skiprows))
+                skiprows = [x + 1 for x in skiprows]
+            df = pd.read_csv(data_csv_path, encoding='UTF-8', usecols = usecols, skiprows=skiprows, nrows=nrows, na_values = na_values)
+        except Exception as e:
+            raise Exception(f"{type(e).__name__} in reading data.csv in {path}. Check the CSV file.")
         
-        # Make dataset dictionary
-        dataset_dic=make_dataset_dic(root)
         
-        # Make variables dictionary
-        variables_dic=make_variables_dic(root, variables =  list(df.columns))
         
-        #remove languages that are not needed
-        if languages != "all":
-            if type(languages) == str:
-                languages = [languages]
-            keys_wrong_language = []
-            for key in dataset_dic.keys():
-                if 'label_' in key or 'description_' in key:
-                    if key.split("_")[1] not in languages:
-                        keys_wrong_language.append(key)
-            for key in keys_wrong_language:
-                dataset_dic.pop(key)
-            for varname in variables_dic.keys():
-                var_dic = variables_dic[varname]
-                keys_wrong_language = []
-                for key in var_dic.keys():
-                    if 'label_' in key or 'labels_' in key or 'description_' in key:
-                        if key.split("_")[1] not in languages:
-                            keys_wrong_language.append(key)
-                for key in keys_wrong_language:    
-                    var_dic.pop(key)
-                variables_dic[varname] = var_dic
-                    
         df.attrs = dataset_dic
         for var_name, attributes in variables_dic.items():
             if var_name in df.columns:

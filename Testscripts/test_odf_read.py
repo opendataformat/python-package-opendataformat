@@ -19,7 +19,7 @@ import os
 
 os.chdir('C:/Users/thartl/OneDrive - DIW Berlin/Open Data Format Project/Python/python-package-opendataformat/Testscripts')
 
-df = odf.read_odf('testdata/data.zip', languages = "de")
+df = odf.read_odf('testdata/data_with_default.zip')
 #df = read_odf(path = 'C:/Users/thartl/Documents/data', languages = "de")
 #C:\Users\thartl\OneDrive - DIW Berlin\Open Data Format Project\R\R-Packages\r-package-opendataformat\tests\testthat\testdata\csv\data
 #import odf  # Assuming the odf module has the read_odf function
@@ -596,6 +596,126 @@ class TestReadODF(unittest.TestCase):
 
         # Label translations for df['bap96']
         self.assertEqual(df['bap96'].attrs.get('labels_de'), {'-2': "trifft nicht zu", '-1': "keine Angabe"})
+
+    def test_read_odf_unzipped(self):
+        # Load the data using read_odf with 'de' language specified
+        # Call the odf.read_odf function with a test file and selected columns
+        df = odf.read_odf(
+            path="testdata/data_unzipped",
+            languages = "en",
+            nrows = 13,
+            skiprows = 3,
+            usecols=["bap87", "bap96", "bap9002", "bap9003"]
+        )
+        
+        self.assertEqual(df.shape, (13, 4))  # Check number of rows and columns
+        self.assertEqual(list(df.columns), ['bap87', 'bap96', 'bap9002', 'bap9003'])  # columns
+
+        
+        # Define expected dataset-level attributes
+        expected_dataset_attributes = [
+            'study', 'dataset', 'label_en', 
+            'description_en', 'url'
+        ]
+
+        # Check if df.attrs contains the expected dataset-level attributes
+        self.assertEqual(list(df.attrs.keys()), expected_dataset_attributes)
+        
+        # Define expected variable-level attributes
+        expected_variable_attributes = [
+            'variable', 'label_en', 'description_en', 
+            'labels_en', 'type', 'url'
+        ]
+        # caeck variable attributes for each variable
+        self.assertEqual(list(df['bap87'].attrs.keys()), expected_variable_attributes)
+        self.assertEqual(list(df['bap96'].attrs.keys()), expected_variable_attributes)
+        self.assertEqual(list(df['bap9002'].attrs.keys()), expected_variable_attributes)
+        self.assertEqual(list(df['bap9003'].attrs.keys()), expected_variable_attributes)
+        
+        # Verify specific dataset attributes
+        self.assertEqual(df.attrs['dataset'], "bap")
+        self.assertEqual(df.attrs['label_en'], "Data from individual questionnaires 2010")
+
+        self.assertEqual(
+            df.attrs['description_en'],
+            "The data were collected as part of the SOEP-Core study using the questionnaire "
+            "\"Living in Germany - Survey 2010 on the social situation - Personal questionnaire for all. "
+            "This questionnaire is addressed to the individual persons in the household. "
+            "A view of the survey instrument can be found here: "
+            "https://www.diw.de/documents/dokumentenarchiv/17/diw_01.c.369781.de/soepfrabo_personen_2010.pdf"
+        )
+        
+        self.assertEqual(df.attrs['url'], "https://paneldata.org/soep-core/data/bap")
+
+
+        # Verify variable attributes 
+        expected_metadata = {
+            'bap87': {
+                'variable': 'bap87',
+                'label_en': 'Current Health',
+                'description_en': 'Question: How would you describe your current health?',
+                'labels_en': {
+                    '-2': 'Does not apply', 
+                    '-1': 'No Answer', 
+                    '1': 'Very good', 
+                    '2': 'Good', 
+                    '3': 'Satisfactory', 
+                    '4': 'Poor', 
+                    '5': 'Bad'
+                },
+                'type': 'numeric',
+                'url': 'https://paneldata.org/soep-core/data/bap/bap87'
+            },
+            'bap9002': {
+                'variable': 'bap9002',
+                'label_en': 'Run-down, Melancholy Last 4 Weeks',
+                'description_en': 'Frequency of feeling a sad and depressed state',
+                'labels_en': {
+                    '-2': 'Does not apply', 
+                    '-1': 'No Answer', 
+                    '1': 'Always', 
+                    '2': 'Often', 
+                    '3': 'Sometimes', 
+                    '4': 'Almost Never', 
+                    '5': 'Never'
+                },
+                'type': 'numeric',
+                'url': 'https://paneldata.org/soep-core/data/bap/bap9002'
+            },
+            'bap9003': {
+                'variable': 'bap9003',
+                'label_en': 'Well-balanced Last 4 Weeks',
+                'description_en': 'Frequency of feeling balance',
+                'labels_en': {
+                    '-2': 'Does not apply', 
+                    '-1': 'No Answer', 
+                    '1': 'Always', 
+                    '2': 'Often', 
+                    '3': 'Sometimes', 
+                    '4': 'Almost Never', 
+                    '5': 'Never'
+                },
+                'type': 'numeric',
+                'url': 'https://paneldata.org/soep-core/data/bap/bap9003'
+            },
+            'bap96': {
+                'variable': 'bap96',
+                'label_en': 'Height',
+                'description_en': 'Body size',
+                'labels_en': {
+                    '-2': 'Does not apply', 
+                    '-1': 'No Answer'
+                },
+                'type': 'numeric',
+                'url': 'https://paneldata.org/soep-core/data/bap/bap96'
+            }
+        }
+        
+        
+        self.assertEqual(df['bap87'].attrs, expected_metadata['bap87'])
+        self.assertEqual(df['bap9002'].attrs, expected_metadata['bap9002'])
+        self.assertEqual(df['bap9003'].attrs, expected_metadata['bap9003'])
+        self.assertEqual(df['bap96'].attrs, expected_metadata['bap96'])
 
     def test_read_odf_specific_rows(self):
         df = odf.read_odf(
@@ -1200,7 +1320,7 @@ class TestReadODF(unittest.TestCase):
 
         # Call the odf.read_odf function with a test file and selected columns
         df = odf.read_odf(
-            path="testdata/data.zip",
+            path="testdata/data",
             usecols=["bap87", "bap96", "bap9002", "bap9003"]
         )
         

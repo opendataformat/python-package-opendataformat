@@ -11,6 +11,7 @@ import tempfile
 import xml.etree.ElementTree as ET
 import shutil
 import zipfile
+import xml.dom.minidom
 
 
 # Set the working directory
@@ -54,12 +55,23 @@ df.attrs = {'study': 'soep-core v38.1',
 
 """
 
-def write_odf(x, path):
+def write_odf(x, path, languages = "all"):
     if (not isinstance(x, pd.DataFrame)):
         raise TypeError("Input not a pandas.core.frame.DataFrame")
     path = os.path.realpath(path)
     if not path.endswith(".zip"):
         path = path + ".zip"
+
+    # convert anlanguages to a list or if languages = ["all"] unlist it
+    if languages != "all" and not isinstance(languages, list):
+        languages = [languages]
+    
+    if isinstance(languages, list) and len(languages) == 1:
+        if languages[0] == "all":
+            languages = languages[0]
+            
+    if isinstance(languages, list) and (None in languages or '' in languages):
+        languages += ["label", "labels", "description"]
 
     # Extract the filename from the path using os.path.basename (cross-platform)
     filename = os.path.basename(path)
@@ -108,11 +120,9 @@ def write_odf(x, path):
     for k,v in x.attrs.items():
         if (k == "label" or k.startswith("label_")):
             labels[k] = v
-    # order label_en first:
-    if labels.get('label_en',None) != None:
-        labels_reordered = {'label_en': labels.pop('label_en')}
-        labels_reordered.update(labels)
-        labels = labels_reordered.copy()
+    # keep only relevant languages if languages != 'all'
+    if isinstance(languages, list):
+        labels = {key: value for key, value in labels.items() if key.split('_')[-1] in languages}
         
     first_label = True
     for key,value in labels.items():   
@@ -127,6 +137,7 @@ def write_odf(x, path):
             lang = key.split("_")[1]
             if first_label == True:
                 ET.SubElement(titlStmtFile, "titl", {"xml:lang": lang}).text = value
+                first_label = False
             else:
                 ET.SubElement(titlStmtFile, "parTitl", {"xml:lang": lang}).text = value
     
@@ -135,12 +146,12 @@ def write_odf(x, path):
     for k,v in x.attrs.items():
         if (k == "description" or k.startswith("description_")):
             descriptions[k] = v
-    # order description_en first:
-    if descriptions.get('description_en', None) != None:
-        descriptions_reordered = {'description_en': descriptions.pop('description_en')}
-        descriptions_reordered.update(descriptions)
-        descriptions = descriptions_reordered.copy()
-    # Add file content descriptions in multiple languages
+    # keep only relevant languages if languages != 'all'
+    if isinstance(languages, list):
+        descriptions = {key: value for key, value in descriptions.items() if key.split('_')[-1] in languages}
+    
+    
+    
     for key, value in descriptions.items():   
         if (len(key.split("_"))==1):
             lang = "NA"
@@ -163,18 +174,15 @@ def write_odf(x, path):
         if x[col].attrs == x.attrs:
             continue
         metadata_dict = x[col].attrs
-        # Add English and German labels for the variable
         # Get labels
         labels = {}
         for k,v in metadata_dict.items():
             if (k == "label" or k.startswith("label_")):
                 labels[k] = v
-        # order label_en first:
-        if labels.get('label_en',None) != None:
-            labels_reordered = {'label_en': labels.pop('label_en')}
-            labels_reordered.update(labels)
-            labels = labels_reordered.copy()
-            
+        # keep only relevant languages if languages != 'all'
+        if isinstance(languages, list):
+            labels = {key: value for key, value in labels.items() if key.split('_')[-1] in languages}
+                
         for key,value in labels.items():   
             if (len(key.split("_"))==1):
                 lang = "NA"
@@ -190,11 +198,10 @@ def write_odf(x, path):
         for k,v in metadata_dict.items():
             if (k == "description" or k.startswith("description_")):
                 descriptions[k] = v
-        # order description_en first:
-        if descriptions.get('description_en', None) != None:
-            descriptions_reordered = {'description_en': descriptions.pop('description_en')}
-            descriptions_reordered.update(descriptions)
-            descriptions = descriptions_reordered.copy()
+        # keep only relevant languages if languages != 'all'
+        if isinstance(languages, list):
+            descriptions = {key: value for key, value in descriptions.items() if key.split('_')[-1] in languages}
+            
         # Add file content descriptions in multiple languages
         for key, value in descriptions.items():   
             if (len(key.split("_"))==1):
@@ -209,17 +216,16 @@ def write_odf(x, path):
         for k,v in metadata_dict.items():
             if (k == "labels" or k.startswith("labels_")):
                 valuelabels[k] = v
-        # order label_en first:
-        if valuelabels.get('labels_en',None) != None:
-            valuelabels_reordered = {'labels_en': valuelabels.pop('labels_en')}
-            valuelabels_reordered.update(valuelabels)
-            valuelabels = valuelabels_reordered.copy()
-        
+        # keep only relevant languages if languages != 'all'
+        if isinstance(languages, list):
+            valuelabels = {key: value for key, value in valuelabels.items() if key.split('_')[-1] in languages}
+            
         labelled_values = []
         for key1, val1 in valuelabels.items():
             for key2 in val1.keys():
-                labelled_values.append(key2)
-        labelled_values = list(set(labelled_values))
+                if key2 not in labelled_values:
+                    labelled_values.append(key2)
+
         
         for val in labelled_values:   
             catgry = ET.SubElement(var, "catgry")
@@ -241,11 +247,18 @@ def write_odf(x, path):
         ET.SubElement(var_notes, "ExtLink", {"URI": x[col].attrs.get('url', "")})
     
     
-    # Convert the ElementTree to a string
-    tree = ET.ElementTree(root)
     
-    # Write the XML structure to a file
-    tree.write(temp_dir + "/" + filename.split('.')[0] + "/metadata.xml", encoding='utf-8', xml_declaration=True)
+    # Add indentations and line breaks
+    # Convert the ElementTree to a string
+    xml_str = ET.tostring(root, encoding='UTF-8')
+
+    # Use minidom to pretty-print the XML
+    dom = xml.dom.minidom.parseString(xml_str)
+    pretty_xml = dom.toprettyxml(indent="  ")
+    
+    # write xml to a file
+    with open(temp_dir + "/" + filename.split('.')[0] + "/metadata.xml", "w", encoding = "UTF-8") as f:
+        f.write(pretty_xml)
     
 
     dataset_dir = os.path.join(temp_dir, filename.split('.')[0])
@@ -261,10 +274,3 @@ def write_odf(x, path):
     
     
 
-#df_new = df.copy()
-#df_new.drop(columns=['bap87', 'bap9201', 'bap9001', 'bap9002', 'bap9003', 'bap96', 'name'], inplace=True)
-
-#print(df_new)
-#write_odf(df_new, "test.zip")
-
-#write_odf(x=testdata, path="test2.zip")
