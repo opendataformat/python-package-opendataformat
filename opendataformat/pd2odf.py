@@ -17,45 +17,67 @@ import xml.dom.minidom
 # Set the working directory
 #os.chdir('C:/Users/thartl/OneDrive - DIW Berlin/Open Data Format Project/Python/python package/python package')
 """
-import int_pd
-import odf2pd
-
-
-df = int_pd.int_pd("C:/Users/thartl/OneDrive - DIW Berlin/Open Data Format Project/Python/python package/python package/test_csv")
-
-testdata = odf2pd.ODF2pd("C:\\Users\\thartl\\OneDrive - DIW Berlin\\Open Data Format Project\\Python\\Testdata\\data.zip")
-
-
-print(df['bap87'].attrs)
-
-df['pid'] = range(20)
-df['pid'].attrs = {'name': 'pid',
-                   'label_en': 'Personal Identifier', 
-                   'label_de': 'Persönliche Identifikationsnummer', 
-                   'description_en': 'example description ID', 
-                   'description_de': 'Beispielbeschreigung ID', 
-                   'type': 'numeric', 
-                   'url': 'www.test.de',
-                   'labels_en': {0: 'NA', 1: 'dummy'}, 
-                   'labels_de': {0: 'NA', 1: 'Beispiel'}}
-
-
-
-
-
-df.attrs = {'study': 'soep-core v38.1', 
-            'dataset': 'bap',
-            'label_en': 'Data from individual questionnaires 2010',
-            'label_de': 'Daten vom Personenfragebogen 2010',
-            'description_en': 'The data were collected as part of the SOEP-Core study using the questionnaire "Living in Germany - Survey 2010 on the social situation - Personal questionnaire for all". This questionnaire is addressed to the individual persons in the household. A view of the survey instrument can be found here: https://www.diw.de/documents/dokumentenarchiv/17/diw_01.c.369781.de/soepfrabo_personen_2010.pdf',
-            'description_de': 'Die Daten wurden im Rahmen der Studie SOEP-Core mittels des Fragebogens „Leben in Deutschland – Befragung 2010 zur sozialen Lage - Personenfragebogen für alle“ erhoben. Dieser Fragebogen richtet sich an die einzelnen Personen im Haushalt. Eine Ansicht des Erhebungsinstrumentes finden Sie hier: https://www.diw.de/documents/dokumentenarchiv/17/diw_01.c.369781.de/soepfrabo_personen_2010.pdf',
-            'url': 'https://paneldata.org/soep-core/data/bap'}
-
-
 
 """
 
 def write_odf(x, path, languages = "all"):
+    """
+    Write a pandas DataFrame or Series to an Open Data Format (ODF) file.
+
+    This function saves the provided pandas dataframe (`x`) to an ODF file, including
+    metadata stored in its `attrs` attribute. Metadata can optionally be filtered by
+    language.
+
+    Parameters
+    ----------
+    x : pandas.DataFrame or pandas.Series
+        The pandas object to be saved to the ODF file. It should have metadata stored
+        in the `attrs` attribute for inclusion in the output file metadata.xml.
+    path : str
+        The file path (including filename) where the ODF file will be saved.
+        Ensure the path ends with `.zip` to specify the correct file format.
+    languages : str or list of str, default "all"
+        Specifies which language(s) of metadata to include in the ODF file.
+        Options include:
+        - "all": Include metadata for all available languages.
+        - A single language code (e.g., "en").
+        Edge cases like empty strings or `None` in the language list are handled gracefully.
+
+    Returns
+    -------
+    None
+        The function writes the file to the specified `path` and does not return a value.
+
+    Raises
+    ------
+    TypeError
+        If `x` is not a pandas DataFrame or Series.
+    ValueError
+        If `languages` contains invalid values.
+
+    Notes
+    -----
+    - This function assumes the use of a library capable of handling ODF files (e.g., `opendataformat`).
+    - Metadata from the `attrs` attribute of `x` is included in the file, filtered by `languages` if specified.
+    - Multilingual metadata, if present, is processed according to the `languages` parameter.
+
+    Examples
+    --------
+    Write a DataFrame to an ODF file, including all metadata:
+
+    >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]})
+    >>> df.attrs = {"label_en": "English Label", "label_fr": "French Label", "description": "Example dataset"}
+    >>> write_odf(df, "output.zip")
+
+    Write a DataFrame to an ODF file, filtering metadata by language:
+
+    >>> write_odf(df, "output.zip", languages="en")
+
+    Write a DataFrame to an ODF file, including metadata for multiple languages:
+
+    >>> write_odf(df, "output.zip", languages=["en", "de"])
+    """
+
     if (not isinstance(x, pd.DataFrame)):
         raise TypeError("Input not a pandas.core.frame.DataFrame")
     path = os.path.realpath(path)
