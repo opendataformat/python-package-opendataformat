@@ -120,6 +120,53 @@ def make_variables_dic(root, variables):
 
 
 def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None, na_values = None):
+    """
+    Read an Open Data Format (ODF) file into a Pandas DataFrame.
+
+    This function reads data from an ODF zipfile (data.csv and metadata.xml) and converts it into a pandas DataFrame.
+    It supports language selection, optional filtering of columns, skipping rows, and replacing specific values
+    with NaN.
+
+    Parameters
+    ----------
+    path : str
+        The file path to the ODF file to be read.
+    languages : str or list of str, default "all"
+        Specifies the language(s) to extract from the file. Use "all" to read all available languages,
+        or pass a single language code (e.g., "en").
+    usecols : list of int or str, optional
+        Specifies the columns to be read from the file. If None, all columns are read.
+        Column selection can be by index or name.
+    skiprows : int or list of int, optional
+        Line numbers to skip (0-indexed) at the start of the file. Can be used to skip metadata or headers.
+    nrows : int, optional
+        The number of rows to read from the file. If None, all rows are read.
+    na_values : scalar, str, list-like, or dict, optional
+        Additional values to consider as NaN. If dict, applies per column.
+
+    Returns
+    -------
+    DataFrame
+        A pandas DataFrame containing the data and metadata from the ODF file.
+
+    Notes
+    -----
+    - This function relies on the `odf2pd` library to parse ODF files. Ensure the library is installed.
+    - The `languages` parameter allows for selecting specific localized data if the ODF file supports it.
+    - Use the pandas.attrs function to call the meatadata, like df.attrs or df['variable_name'].attrs
+
+    Examples
+    --------
+    Read an ODF file and load all columns:
+
+    >>> df = read_odf("example_dataset.zip")
+
+    Read an ODF zipfile, selecting specific language:
+
+    >>> df = read_odf("example.zip", language="en")
+
+    """
+    
     # if path has not suffix .zip" but a ".zip" file exists, .zip" is added to path
     # if no file zipped file exists, but a folder with the name exists, the function tries to read
     if (not path.endswith(".zip") and not os.path.exists(path)) or (not path.endswith(".zip") and os.path.exists(path + ".zip")) :
