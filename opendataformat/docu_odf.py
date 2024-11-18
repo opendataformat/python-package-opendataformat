@@ -9,6 +9,72 @@ import pandas as pd
 
 
 def docu_odf(x, metadata = "all", languages = "all"):
+    """
+    Extract and display metadata from a pandas DataFrame or pandas.Series.
+
+    This function processes the metadata stored in the `attrs` attribute of a pandas object,
+    allowing for selective extraction by metadata type or language. Metadata includes fields
+    such as labels, descriptions, and URLs.
+
+    Parameters
+    ----------
+    x : pandas.DataFrame or pandas.Series (single variable metadata)
+        The input pandas object from which metadata will be extracted.
+    metadata : str, default "all"
+        The type of metadata to extract. Options include:
+        - "all": Extract and display all available metadata.
+        - "label", "labels": Extract value labels.
+        - "description": Extract descriptions.
+        - "type": Extract types.
+        - "url": Extract URLs.
+        Aliases for these options are supported (e.g., "Value labels" for "labels").
+    languages : str or list of str, default "all"
+        The language(s) to filter metadata by. Options include:
+        - "all": Process metadata for all languages.
+        - A single language code (e.g., "en").
+        Edge cases like empty strings or None are handled gracefully.
+
+    Returns
+    -------
+    dict or str
+        Extracted metadata as a dictionary. If only a single metadata field is found,
+        returns the metadata as a string instead.
+
+    Raises
+    ------
+    TypeError
+        If `x` is not a pandas DataFrame or Series.
+    ValueError
+        If `metadata` or `languages` contain invalid values.
+
+    Notes
+    -----
+    - Metadata is stored in the `attrs` attribute of pandas objects.
+    - This function supports multilingual metadata if provided in the input.
+
+    Examples
+    --------
+    Extract dataset level metadata from a DataFrame:
+
+    >>> df = read_odf("example_dataset.zip")
+    >>> df.attrs
+    >>> docu_odf(df)
+    
+    Extract specific variable metadata:
+
+    >>> docu_odf(df['variable_name'])
+
+    Extract specific metadata type:
+
+    >>> docu_odf(df, metadata="label")
+
+
+    Extract metadata filtered by language:
+
+    >>> docu_odf(df, metadata="label", languages="en")
+    label_en: English Label
+    """
+    
     if not isinstance(x, (pd.DataFrame, pd.Series)):
         TypeError('x is not a pandas data frame or a columns of a pandas data frame')
         
