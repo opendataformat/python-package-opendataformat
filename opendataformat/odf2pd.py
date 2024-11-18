@@ -153,7 +153,7 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
     -----
     - This function relies on the `odf2pd` library to parse ODF files. Ensure the library is installed.
     - The `languages` parameter allows for selecting specific localized data if the ODF file supports it.
-    - Use the pandas.attrs function to call the meatadata, like df.attrs or df['variable_name'].attrs
+    - Metadata is stored in the `attrs` attribute of pandas objects,like df.attrs or df['variable_name'].attrs to call the meatadata.
 
     Examples
     --------
