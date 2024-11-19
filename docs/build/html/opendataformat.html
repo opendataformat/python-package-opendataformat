@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>opendataformat package &#8212; OpenDataFormat 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="OpenDataFormat documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="opendataformat-package">
+<h1>opendataformat package<a class="headerlink" href="#opendataformat-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-opendataformat.docu_odf">
+<span id="opendataformat-docu-odf-module"></span><h2>opendataformat.docu_odf module<a class="headerlink" href="#module-opendataformat.docu_odf" title="Link to this heading">¶</a></h2>
+<p>Created on Thu Nov 14 17:12:37 2024</p>
+<p>&#64;author: thartl</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="opendataformat.docu_odf.docu_odf">
+<span class="sig-prename descclassname"><span class="pre">opendataformat.docu_odf.</span></span><span class="sig-name descname"><span class="pre">docu_odf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">languages</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opendataformat/docu_odf.html#docu_odf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opendataformat.docu_odf.docu_odf" title="Link to this definition">¶</a></dt>
+<dd><p>Extract and display metadata from a pandas DataFrame or pandas.Series.</p>
+<p>This function processes the metadata stored in the <cite>attrs</cite> attribute of a pandas object,
+allowing for selective extraction by metadata type or language. Metadata includes fields
+such as labels, descriptions, and URLs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>pandas.DataFrame</em><em> or </em><em>pandas.Series</em><em> (</em><em>single variable metadata</em><em>)</em>) – The input pandas object from which metadata will be extracted.</p></li>
+<li><p><strong>metadata</strong> (<em>str</em><em>, </em><em>default &quot;all&quot;</em>) – The type of metadata to extract. Options include:
+- “all”: Extract and display all available metadata.
+- “label”, “labels”: Extract value labels.
+- “description”: Extract descriptions.
+- “type”: Extract types.
+- “url”: Extract URLs.
+Aliases for these options are supported (e.g., “Value labels” for “labels”).</p></li>
+<li><p><strong>languages</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em><em>, </em><em>default &quot;all&quot;</em>) – The language(s) to filter metadata by. Options include:
+- “all”: Process metadata for all languages.
+- A single language code (e.g., “en”).
+Edge cases like empty strings or None are handled gracefully.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Extracted metadata as a dictionary. If only a single metadata field is found,
+returns the metadata as a string instead.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or str</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If <cite>x</cite> is not a pandas DataFrame or Series.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>metadata</cite> or <cite>languages</cite> contain invalid values.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Metadata is stored in the <cite>attrs</cite> attribute of pandas objects.</p></li>
+<li><p>This function supports multilingual metadata if provided in the input.</p></li>
+</ul>
+<p class="rubric">Examples</p>
+<p>Extract all metadata from a DataFrame:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;label_en&quot;</span><span class="p">:</span> <span class="s2">&quot;English Label&quot;</span><span class="p">,</span> <span class="s2">&quot;label_fr&quot;</span><span class="p">:</span> <span class="s2">&quot;French Label&quot;</span><span class="p">,</span> <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://example.com&quot;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">docu_odf</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="go">label_en: English Label</span>
+<span class="go">label_fr: French Label</span>
+<span class="go">url: https://example.com</span>
+</pre></div>
+</div>
+<p>Extract specific metadata type:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">docu_odf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>
+<span class="go">label_en: English Label</span>
+<span class="go">label_fr: French Label</span>
+</pre></div>
+</div>
+<p>Extract metadata filtered by language:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">docu_odf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">languages</span><span class="o">=</span><span class="s2">&quot;en&quot;</span><span class="p">)</span>
+<span class="go">label_en: English Label</span>
+</pre></div>
+</div>
+<p>Extract dataset level metadata from a DataFrame:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">read_odf</span><span class="p">(</span><span class="s2">&quot;example_dataset.zip&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;study&#39;</span><span class="p">:</span> <span class="s1">&#39;study name&#39;</span><span class="p">,</span>
+<span class="go">        &#39;dataset&#39;: &#39;dataset name&#39;,</span>
+<span class="go">        &#39;label_en&#39;: &#39;label in english&#39;,</span>
+<span class="go">        &#39;label_de&#39;: &#39;label in german&#39;,</span>
+<span class="go">        &#39;description_en&#39;: &#39;details in english&#39;,</span>
+<span class="go">        &#39;description_de&#39;: &#39;details in german&#39;,</span>
+<span class="go">        &#39;url&#39;: &#39;https://example.url&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">docu_odf</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="go">study: study name</span>
+<span class="go">dataset: dataset name</span>
+<span class="go">label_en: label in english</span>
+<span class="go">label_de: label in german</span>
+<span class="go">description_en: details in english</span>
+<span class="go">description_de: details in german</span>
+<span class="go">url: https://example.url</span>
+</pre></div>
+</div>
+<p>Extract specific variable metadata:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">docu_odf</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;variable_name&#39;</span><span class="p">])</span>
+<span class="go">name:variable</span>
+<span class="go">label_en: english label</span>
+<span class="go">label_de: german label</span>
+<span class="go">url: https://example.url</span>
+</pre></div>
+</div>
+<p>Extract specific metadata type:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">docu_odf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>
+<span class="go">label_en: English label</span>
+<span class="go">label_de: German label</span>
+</pre></div>
+</div>
+<p>Extract metadata filtered by language:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">docu_odf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">languages</span><span class="o">=</span><span class="s2">&quot;en&quot;</span><span class="p">)</span>
+<span class="go">label_en: English Label</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-opendataformat.odf2pd">
+<span id="opendataformat-odf2pd-module"></span><h2>opendataformat.odf2pd module<a class="headerlink" href="#module-opendataformat.odf2pd" title="Link to this heading">¶</a></h2>
+<p>Created on Mon Oct 21 12:24:04 2024</p>
+<p>&#64;author: xhan</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="opendataformat.odf2pd.read_odf">
+<span class="sig-prename descclassname"><span class="pre">opendataformat.odf2pd.</span></span><span class="sig-name descname"><span class="pre">read_odf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">languages</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">usecols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skiprows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nrows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">na_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opendataformat/odf2pd.html#read_odf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opendataformat.odf2pd.read_odf" title="Link to this definition">¶</a></dt>
+<dd><p>Read an Open Data Format (ODF) file into a Pandas DataFrame.</p>
+<p>This function reads data from an ODF zipfile (data.csv and metadata.xml) and converts it into a pandas DataFrame.
+It supports language selection, optional filtering of columns, skipping rows, and replacing specific values
+with NaN.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The file path to the ODF file to be read.</p></li>
+<li><p><strong>languages</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em><em>, </em><em>default &quot;all&quot;</em>) – Specifies the language(s) to extract from the file. Use “all” to read all available languages,
+or pass a single language code (e.g., “en”).</p></li>
+<li><p><strong>usecols</strong> (<em>list</em><em> of </em><em>int</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – Specifies the columns to be read from the file. If None, all columns are read.
+Column selection can be by index or name.</p></li>
+<li><p><strong>skiprows</strong> (<em>int</em><em> or </em><em>list</em><em> of </em><em>int</em><em>, </em><em>optional</em>) – Line numbers to skip (0-indexed) at the start of the file. Can be used to skip metadata or headers.</p></li>
+<li><p><strong>nrows</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of rows to read from the file. If None, all rows are read.</p></li>
+<li><p><strong>na_values</strong> (<em>scalar</em><em>, </em><em>str</em><em>, </em><em>list-like</em><em>, or </em><em>dict</em><em>, </em><em>optional</em>) – Additional values to consider as NaN. If dict, applies per column.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A pandas DataFrame containing the data and metadata from the ODF file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This function relies on the <cite>odf2pd</cite> library to parse ODF files. Ensure the library is installed.</p></li>
+<li><p>The <cite>languages</cite> parameter allows for selecting specific localized data if the ODF file supports it.</p></li>
+<li><p>Use the pandas.attrs function to call the meatadata, like df.attrs or df[‘variable_name’].attrs</p></li>
+</ul>
+<p class="rubric">Examples</p>
+<p>Read an ODF file and load all columns:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">read_odf</span><span class="p">(</span><span class="s2">&quot;example_dataset.zip&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Read an ODF zipfile, selecting specific language:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">read_odf</span><span class="p">(</span><span class="s2">&quot;example.zip&quot;</span><span class="p">,</span> <span class="n">language</span><span class="o">=</span><span class="s2">&quot;en&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-opendataformat.pd2odf">
+<span id="opendataformat-pd2odf-module"></span><h2>opendataformat.pd2odf module<a class="headerlink" href="#module-opendataformat.pd2odf" title="Link to this heading">¶</a></h2>
+<p>Created on Thu Oct 17 12:25:16 2024</p>
+<p>&#64;author: thartl</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="opendataformat.pd2odf.write_odf">
+<span class="sig-prename descclassname"><span class="pre">opendataformat.pd2odf.</span></span><span class="sig-name descname"><span class="pre">write_odf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">languages</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opendataformat/pd2odf.html#write_odf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opendataformat.pd2odf.write_odf" title="Link to this definition">¶</a></dt>
+<dd><p>Write a pandas DataFrame or Series to an Open Data Format (ODF) file.</p>
+<p>This function saves the provided pandas dataframe (<cite>x</cite>) to an ODF file, including
+metadata stored in its <cite>attrs</cite> attribute. Metadata can optionally be filtered by
+language.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>pandas.DataFrame</em><em> or </em><em>pandas.Series</em>) – The pandas object to be saved to the ODF file. It should have metadata stored
+in the <cite>attrs</cite> attribute for inclusion in the output file metadata.xml.</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – The file path (including filename) where the ODF file will be saved.
+Ensure the path ends with <cite>.zip</cite> to specify the correct file format.</p></li>
+<li><p><strong>languages</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em><em>, </em><em>default &quot;all&quot;</em>) – Specifies which language(s) of metadata to include in the ODF file.
+Options include:
+- “all”: Include metadata for all available languages.
+- A single language code (e.g., “en”).
+Edge cases like empty strings or <cite>None</cite> in the language list are handled gracefully.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The function writes the file to the specified <cite>path</cite> and does not return a value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If <cite>x</cite> is not a pandas DataFrame or Series.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>languages</cite> contains invalid values.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This function assumes the use of a library capable of handling ODF files (e.g., <cite>opendataformat</cite>).</p></li>
+<li><p>Metadata from the <cite>attrs</cite> attribute of <cite>x</cite> is included in the file, filtered by <cite>languages</cite> if specified.</p></li>
+<li><p>Multilingual metadata, if present, is processed according to the <cite>languages</cite> parameter.</p></li>
+</ul>
+<p class="rubric">Examples</p>
+<p>Write a DataFrame to an ODF file, including all metadata:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;label_en&quot;</span><span class="p">:</span> <span class="s2">&quot;English Label&quot;</span><span class="p">,</span> <span class="s2">&quot;label_fr&quot;</span><span class="p">:</span> <span class="s2">&quot;French Label&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Example dataset&quot;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">write_odf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;output.zip&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Write a DataFrame to an ODF file, filtering metadata by language:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">write_odf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;output.zip&quot;</span><span class="p">,</span> <span class="n">languages</span><span class="o">=</span><span class="s2">&quot;en&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Write a DataFrame to an ODF file, including metadata for multiple languages:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">write_odf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;output.zip&quot;</span><span class="p">,</span> <span class="n">languages</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;en&quot;</span><span class="p">,</span> <span class="s2">&quot;de&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">OpenDataFormat</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">opendataformat package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-opendataformat.docu_odf">opendataformat.docu_odf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-opendataformat.odf2pd">opendataformat.odf2pd module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-opendataformat.pd2odf">opendataformat.pd2odf module</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">OpenDataFormat documentation</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Tom Hartl, Xiaoyao Han.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/opendataformat.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

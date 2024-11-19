@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>opendataformat.docu_odf &#8212; OpenDataFormat 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for opendataformat.docu_odf</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Thu Nov 14 17:12:37 2024</span>
+
+<span class="sd">@author: thartl</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<div class="viewcode-block" id="docu_odf">
+<a class="viewcode-back" href="../../opendataformat.html#opendataformat.docu_odf.docu_odf">[docs]</a>
+<span class="k">def</span> <span class="nf">docu_odf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">languages</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract and display metadata from a pandas DataFrame or pandas.Series.</span>
+
+<span class="sd">    This function processes the metadata stored in the `attrs` attribute of a pandas object,</span>
+<span class="sd">    allowing for selective extraction by metadata type or language. Metadata includes fields</span>
+<span class="sd">    such as labels, descriptions, and URLs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : pandas.DataFrame or pandas.Series (single variable metadata)</span>
+<span class="sd">        The input pandas object from which metadata will be extracted.</span>
+<span class="sd">    metadata : str, default &quot;all&quot;</span>
+<span class="sd">        The type of metadata to extract. Options include:</span>
+<span class="sd">        - &quot;all&quot;: Extract and display all available metadata.</span>
+<span class="sd">        - &quot;label&quot;, &quot;labels&quot;: Extract value labels.</span>
+<span class="sd">        - &quot;description&quot;: Extract descriptions.</span>
+<span class="sd">        - &quot;type&quot;: Extract types.</span>
+<span class="sd">        - &quot;url&quot;: Extract URLs.</span>
+<span class="sd">        Aliases for these options are supported (e.g., &quot;Value labels&quot; for &quot;labels&quot;).</span>
+<span class="sd">    languages : str or list of str, default &quot;all&quot;</span>
+<span class="sd">        The language(s) to filter metadata by. Options include:</span>
+<span class="sd">        - &quot;all&quot;: Process metadata for all languages.</span>
+<span class="sd">        - A single language code (e.g., &quot;en&quot;).</span>
+<span class="sd">        Edge cases like empty strings or None are handled gracefully.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict or str</span>
+<span class="sd">        Extracted metadata as a dictionary. If only a single metadata field is found,</span>
+<span class="sd">        returns the metadata as a string instead.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If `x` is not a pandas DataFrame or Series.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `metadata` or `languages` contain invalid values.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - Metadata is stored in the `attrs` attribute of pandas objects.</span>
+<span class="sd">    - This function supports multilingual metadata if provided in the input.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Extract all metadata from a DataFrame:</span>
+
+<span class="sd">    &gt;&gt;&gt; df = pd.DataFrame()</span>
+<span class="sd">    &gt;&gt;&gt; df.attrs = {&quot;label_en&quot;: &quot;English Label&quot;, &quot;label_fr&quot;: &quot;French Label&quot;, &quot;url&quot;: &quot;https://example.com&quot;}</span>
+<span class="sd">    &gt;&gt;&gt; docu_odf(df)</span>
+<span class="sd">    label_en: English Label</span>
+<span class="sd">    label_fr: French Label</span>
+<span class="sd">    url: https://example.com</span>
+
+<span class="sd">    Extract specific metadata type:</span>
+
+<span class="sd">    &gt;&gt;&gt; docu_odf(df, metadata=&quot;label&quot;)</span>
+<span class="sd">    label_en: English Label</span>
+<span class="sd">    label_fr: French Label</span>
+
+<span class="sd">    Extract metadata filtered by language:</span>
+
+<span class="sd">    &gt;&gt;&gt; docu_odf(df, metadata=&quot;label&quot;, languages=&quot;en&quot;)</span>
+<span class="sd">    label_en: English Label</span>
+<span class="sd">    </span>
+<span class="sd">    Extract dataset level metadata from a DataFrame:</span>
+
+<span class="sd">    &gt;&gt;&gt; df = read_odf(&quot;example_dataset.zip&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; df.attrs = {&#39;study&#39;: &#39;study name&#39;, </span>
+<span class="sd">            &#39;dataset&#39;: &#39;dataset name&#39;,</span>
+<span class="sd">            &#39;label_en&#39;: &#39;label in english&#39;,</span>
+<span class="sd">            &#39;label_de&#39;: &#39;label in german&#39;,</span>
+<span class="sd">            &#39;description_en&#39;: &#39;details in english&#39;,</span>
+<span class="sd">            &#39;description_de&#39;: &#39;details in german&#39;,</span>
+<span class="sd">            &#39;url&#39;: &#39;https://example.url&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; docu_odf(df)</span>
+<span class="sd">    study: study name</span>
+<span class="sd">    dataset: dataset name</span>
+<span class="sd">    label_en: label in english</span>
+<span class="sd">    label_de: label in german</span>
+<span class="sd">    description_en: details in english</span>
+<span class="sd">    description_de: details in german</span>
+<span class="sd">    url: https://example.url</span>
+<span class="sd">    </span>
+<span class="sd">    Extract specific variable metadata:</span>
+
+<span class="sd">    &gt;&gt;&gt; docu_odf(df[&#39;variable_name&#39;])</span>
+<span class="sd">    name:variable</span>
+<span class="sd">    label_en: english label</span>
+<span class="sd">    label_de: german label</span>
+<span class="sd">    url: https://example.url</span>
+
+<span class="sd">    Extract specific metadata type:</span>
+
+<span class="sd">    &gt;&gt;&gt; docu_odf(df, metadata=&quot;label&quot;)</span>
+<span class="sd">    label_en: English label</span>
+<span class="sd">    label_de: German label</span>
+
+<span class="sd">    Extract metadata filtered by language:</span>
+
+<span class="sd">    &gt;&gt;&gt; docu_odf(df, metadata=&quot;label&quot;, languages=&quot;en&quot;)</span>
+<span class="sd">    label_en: English Label</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
+        <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;x is not a pandas data frame or a columns of a pandas data frame&#39;</span><span class="p">)</span>
+        
+        
+    <span class="c1"># convert anlanguages to a list or if languages = [&quot;all&quot;] unlist it</span>
+    <span class="k">if</span> <span class="n">languages</span> <span class="o">!=</span> <span class="s2">&quot;all&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">languages</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">languages</span> <span class="o">=</span> <span class="p">[</span><span class="n">languages</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">languages</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">languages</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">languages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
+            <span class="n">languages</span> <span class="o">=</span> <span class="n">languages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>        
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">languages</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="kc">None</span> <span class="ow">in</span> <span class="n">languages</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span> <span class="ow">in</span> <span class="n">languages</span><span class="p">):</span>
+        <span class="n">languages</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="n">languages</span> <span class="o">!=</span> <span class="s2">&quot;all&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">languages</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;languages  not valid&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">metadata</span><span class="o">==</span><span class="s1">&#39;all&#39;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;dataset&#39;</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">]:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s1">&#39;labels&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">languages</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;labels&#39;</span><span class="p">:</span>
+                        <span class="n">lang</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">lang</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Value Labels </span><span class="si">{</span><span class="n">lang</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">val</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1">:   </span><span class="si">{</span><span class="n">lab</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">languages</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Value Labels </span><span class="si">{</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">val</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1">:   </span><span class="si">{</span><span class="n">lab</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">languages</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">languages</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Labels&#39;</span><span class="p">,</span> <span class="s1">&#39;labels&#39;</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;Label&#39;</span><span class="p">]:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="s1">&#39;label&#39;</span>
+        <span class="k">elif</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;Description&#39;</span><span class="p">,</span> <span class="s1">&#39;Descriptions&#39;</span><span class="p">,</span> <span class="s1">&#39;Descriptions&#39;</span><span class="p">]:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="s1">&#39;description&#39;</span>
+        <span class="k">elif</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;valuelabels&#39;</span><span class="p">,</span> <span class="s1">&#39;valuelabels&#39;</span><span class="p">,</span> <span class="s1">&#39;valuelabel&#39;</span><span class="p">,</span> 
+                        <span class="s1">&#39;value labels&#39;</span><span class="p">,</span> <span class="s1">&#39;value label&#39;</span><span class="p">,</span> <span class="s1">&#39;Valuelabels&#39;</span><span class="p">,</span> 
+                        <span class="s1">&#39;Valuelabel&#39;</span><span class="p">,</span> <span class="s1">&#39;Value labels&#39;</span><span class="p">,</span> <span class="s1">&#39;Value Label&#39;</span><span class="p">]:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="s1">&#39;labels&#39;</span>
+        <span class="k">elif</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;Type&#39;</span><span class="p">,</span> <span class="s1">&#39;types&#39;</span><span class="p">,</span> <span class="s1">&#39;Types&#39;</span><span class="p">]:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="s1">&#39;type&#39;</span>
+        <span class="k">elif</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;URL&#39;</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">,</span> <span class="s1">&#39;URI&#39;</span><span class="p">,</span> <span class="s1">&#39;uri&#39;</span><span class="p">]:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="s1">&#39;url&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;metadata must be one of following options: &quot;all&quot;, &quot;label&quot;, &quot;labels&quot;, &quot;description&quot;, &quot;descriptions&quot;, &quot;valuelabel&quot;, &quot;valuelabels&quot;, &quot;type&quot;, &quot;types&quot;, &quot;url&quot;&#39;</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>                    
+        <span class="k">if</span> <span class="n">languages</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">metadata</span> <span class="ow">or</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">metadata</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">metadata</span> <span class="o">==</span> <span class="s1">&#39;labels&#39;</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Value </span><span class="si">{</span><span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;:  &quot;</span> <span class="o">+</span> <span class="n">v</span><span class="p">)</span>
+                        <span class="n">output</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">key</span> <span class="o">+</span> <span class="s1">&#39;: &#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">)</span>
+                        <span class="n">output</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;labels&#39;</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="n">languages</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">lang</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;labels&#39;</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="n">metadata</span> <span class="o">!=</span> <span class="s1">&#39;labels&#39;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">lang</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lang</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="n">metadata</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">lang</span> <span class="o">+</span> <span class="s1">&#39;:  &#39;</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">lang</span><span class="p">,</span> <span class="s1">&#39;Not found&#39;</span><span class="p">))</span>
+                                <span class="n">output</span><span class="p">[</span><span class="n">metadata</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">lang</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">lang</span><span class="p">,</span> <span class="s1">&#39;Not found&#39;</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="n">metadata</span> <span class="o">+</span> <span class="s1">&#39;:  &#39;</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="s1">&#39;Not found&#39;</span><span class="p">))</span>
+                                <span class="n">output</span><span class="p">[</span><span class="n">metadata</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="s1">&#39;Not found&#39;</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">lang</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lang</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">lang</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">dict</span><span class="p">):</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Value labels </span><span class="si">{</span><span class="n">lang</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">)</span>
+                                    <span class="k">for</span> <span class="n">val</span><span class="p">,</span><span class="n">lab</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">lang</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                                        <span class="k">if</span> <span class="p">(</span><span class="n">lab</span> <span class="o">==</span> <span class="kc">None</span><span class="p">):</span>
+                                            <span class="n">lab</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span>
+                                        <span class="nb">print</span><span class="p">(</span><span class="n">val</span> <span class="o">+</span> <span class="s2">&quot;:  &quot;</span> <span class="o">+</span> <span class="n">lab</span><span class="p">)</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Value labels </span><span class="si">{</span><span class="n">lang</span><span class="si">}</span><span class="s1"> not found&#39;</span><span class="p">)</span>
+                                <span class="n">output</span><span class="p">[</span><span class="n">metadata</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">lang</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">lang</span><span class="p">,</span> <span class="s1">&#39;Not found&#39;</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">dict</span><span class="p">):</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Value labels:&#39;</span><span class="p">)</span>
+                                    <span class="k">for</span> <span class="n">val</span><span class="p">,</span><span class="n">lab</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                                        <span class="nb">print</span><span class="p">(</span><span class="n">val</span> <span class="o">+</span> <span class="s2">&quot;:  &quot;</span> <span class="o">+</span> <span class="n">lab</span><span class="p">)</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Value labels without language tag not found&#39;</span><span class="p">)</span>
+                                <span class="n">output</span><span class="p">[</span><span class="n">metadata</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="s1">&#39;Not found&#39;</span><span class="p">)</span>
+                                
+                                <span class="k">for</span> <span class="n">val</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1">:   </span><span class="si">{</span><span class="n">lab</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">metadata</span> <span class="o">+</span> <span class="s1">&#39;:  &#39;</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="s1">&#39;Not found&#39;</span><span class="p">))</span>
+                <span class="n">output</span><span class="p">[</span><span class="n">metadata</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="s1">&#39;Not found&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">output</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Metadata &#39;</span> <span class="o">+</span> <span class="n">metadata</span> <span class="o">+</span> <span class="s1">&#39; not found&#39;</span><span class="p">)</span>
+        <span class="c1"># if we have only one output, return the output as string instead of as dictionary</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+        
+    
+    
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">OpenDataFormat</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../opendataformat.html">opendataformat package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Tom Hartl, Xiaoyao Han.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
