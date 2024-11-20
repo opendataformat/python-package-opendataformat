@@ -6,6 +6,10 @@ setup(
     name='opendataformat',
     version='0.1',
     packages=find_packages(),
+    include_package_data=True,  # Include package data specified in MANIFEST.in
+    package_data={
+        'opendataformat': ['data/*.zip'],  # Include specific files
+    },
     install_requires=[
         'pandas',
     ],

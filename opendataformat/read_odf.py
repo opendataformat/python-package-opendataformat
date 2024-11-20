@@ -53,12 +53,12 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
     Examples
     --------
     Read an ODF file and load all columns:
-
-    >>> df = read_odf("example_dataset.zip")
+    >>> import opendataformat as odf
+    >>> df = odf.read_odf("example_dataset.zip")
 
     Read an ODF zipfile, selecting specific language:
 
-    >>> df = read_odf("example.zip", language="en")
+    >>> df = odf.read_odf("example.zip", languages="en")
 
     """
     

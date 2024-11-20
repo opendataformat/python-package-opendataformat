@@ -57,30 +57,30 @@ def docu_odf(x, metadata = "all", languages = "all"):
     Examples
     --------
     Extract all metadata from a DataFrame:
-
+    >>> import opendataformat as odf
     >>> df = pd.DataFrame()
     >>> df.attrs = {"label_en": "English Label", "label_fr": "French Label", "url": "https://example.com"}
-    >>> docu_odf(df)
+    >>> odf.docu_odf(df)
     label_en: English Label
     label_fr: French Label
     url: https://example.com
 
     Extract specific metadata type:
 
-    >>> docu_odf(df, metadata="label")
+    >>> odf.docu_odf(df, metadata="label")
     label_en: English Label
     label_fr: French Label
 
     Extract metadata filtered by language:
 
-    >>> label = docu_odf(df, metadata="label", languages="en")
+    >>> label = odf.docu_odf(df, metadata="label", languages="en")
     label_en: English Label
     >>> print(label)
     English Label
     
     Extract dataset level metadata from a DataFrame:
 
-    >>> df = read_odf("example_dataset.zip")
+    >>> df = odf.read_odf("example_dataset.zip")
     >>> df.attrs = {'study': 'study name', 
             'dataset': 'dataset name',
             'label_en': 'label in english',
@@ -88,7 +88,7 @@ def docu_odf(x, metadata = "all", languages = "all"):
             'description_en': 'details in english',
             'description_de': 'details in german',
             'url': 'https://example.url'}
-    >>> docu_odf(df)
+    >>> odf.docu_odf(df)
     study: study name
     dataset: dataset name
     label_en: label in english
@@ -99,7 +99,7 @@ def docu_odf(x, metadata = "all", languages = "all"):
     
     Extract specific variable metadata:
 
-    >>> docu_odf(df['variable_name'])
+    >>> odf.docu_odf(df['variable_name'])
     name:variable
     label_en: english label
     label_de: german label
@@ -107,13 +107,13 @@ def docu_odf(x, metadata = "all", languages = "all"):
 
     Extract specific metadata type:
 
-    >>> docu_odf(df, metadata="label")
+    >>> odf.docu_odf(df, metadata="label")
     label_en: English label
     label_de: German label
 
     Extract metadata filtered by language:
 
-    >>> label = docu_odf(df, metadata="label", languages="en")
+    >>> label = odf.docu_odf(df, metadata="label", languages="en")
     label_en: English Label
     >>> print(label)
     English Label

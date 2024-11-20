@@ -1,4 +1,5 @@
 LICENSE
+MANIFEST.in
 README.md
 setup.py
 opendataformat/__init__.py
@@ -10,3 +11,6 @@ opendataformat.egg-info/SOURCES.txt
 opendataformat.egg-info/dependency_links.txt
 opendataformat.egg-info/requires.txt
 opendataformat.egg-info/top_level.txt
+opendataformat/data/data.zip
+opendataformat/data/data_with_default.zip
+opendataformat/data/data_with_missings.zip

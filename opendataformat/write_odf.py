@@ -59,18 +59,18 @@ def write_odf(x, path, languages = "all"):
     Examples
     --------
     Write a DataFrame to an ODF file, including all metadata:
-
+    >>> import opendataformat as odf
     >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]})
     >>> df.attrs = {"label_en": "English Label", "label_de": "German Label", "description_en": "Example dataset"}
-    >>> write_odf(df, "output.zip")
+    >>> odf.write_odf(df, "output.zip")
 
     Write a DataFrame to an ODF file, filtering metadata by language:
 
-    >>> write_odf(df, "output.zip", languages="en")
+    >>> odf.write_odf(df, "output.zip", languages="en")
 
     Write a DataFrame to an ODF file, including metadata for multiple languages:
 
-    >>> write_odf(df, "output.zip", languages="all")
+    >>> odf.write_odf(df, "output.zip", languages="all")
     """
 
     if (not isinstance(x, pd.DataFrame)):
