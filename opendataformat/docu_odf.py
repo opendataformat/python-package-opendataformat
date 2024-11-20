@@ -22,16 +22,18 @@ def docu_odf(x, metadata = "all", languages = "all"):
         The input pandas object from which metadata will be extracted.
     metadata : str, default "all"
         The type of metadata to extract. Options include:
-        - "all": Extract and display all available metadata.
-        - "label", "labels": Extract value labels.
-        - "description": Extract descriptions.
-        - "type": Extract types.
-        - "url": Extract URLs.
+        - "all": Display all available metadata.
+        - "label", "labels": Display and return dataset or variable labels.
+        - "description": Display and return descriptions.
+        - "type": Display and return types.
+        - "url": Display and return URLs.
+        - "valuelabels": Display and return value labels.
         Aliases for these options are supported (e.g., "Value labels" for "labels").
     languages : str or list of str, default "all"
         The language(s) to filter metadata by. Options include:
         - "all": Process metadata for all languages.
         - A single language code (e.g., "en").
+        - A list of language codes (e.g., ["en", "de"]).
         Edge cases like empty strings or None are handled gracefully.
 
     Returns
@@ -71,8 +73,10 @@ def docu_odf(x, metadata = "all", languages = "all"):
 
     Extract metadata filtered by language:
 
-    >>> docu_odf(df, metadata="label", languages="en")
+    >>> label = docu_odf(df, metadata="label", languages="en")
     label_en: English Label
+    >>> print(label)
+    English Label
     
     Extract dataset level metadata from a DataFrame:
 
@@ -109,8 +113,10 @@ def docu_odf(x, metadata = "all", languages = "all"):
 
     Extract metadata filtered by language:
 
-    >>> docu_odf(df, metadata="label", languages="en")
+    >>> label = docu_odf(df, metadata="label", languages="en")
     label_en: English Label
+    >>> print(label)
+    English Label
     """
     
     if not isinstance(x, (pd.DataFrame, pd.Series)):
