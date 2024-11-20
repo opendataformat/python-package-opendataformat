@@ -14,108 +14,6 @@ import os
 
 
 
-def make_dataset_dic(root):        
-    dictionary = {}  # Initialize the dictionary to store label entries
-    #study and dataset name
-    dictionary['study'] = root.findtext(".//stdyDscr/citation/titlStmt/titl")
-    dictionary['dataset'] = root.findtext(".//fileDscr/fileTxt/fileName")
-    # labels
-    titl_stmt = root.find('.//fileDscr/fileTxt/fileCitation/titlStmt')
-    if titl_stmt is not None:
-        # Loop through each child element in titlStmt
-        for elem in titl_stmt:
-            # Check if there is a language attribute
-            lang = elem.get('{http://www.w3.org/XML/1998/namespace}lang')
-            if lang:
-                # Store text with 'label_<language>' key if lang attribute exists
-                dictionary[f'label_{lang}'] = elem.text
-            else:
-                # Store text with 'label' key if no lang attribute exists
-                dictionary['label'] = elem.text
-    # Process descriptions in fileCont
-    for file_cont in root.findall('.//fileDscr/fileTxt/fileCont'):
-        lang = file_cont.get('{http://www.w3.org/XML/1998/namespace}lang')
-        if lang:
-            dictionary[f'description_{lang}'] = file_cont.text
-        else:
-            dictionary['description'] = file_cont.text
-    #URL
-    ExtLink = root.findall('.//fileDscr/notes/ExtLink')
-    if len(ExtLink) == 1:
-        dictionary['url'] = ExtLink[0].get('URI')
-
-    return dictionary
-
-def make_variables_dic(root, variables):        
-    dictionaries={}
-    
-    for var in root.findall('.//dataDscr/var'):
-        varname = var.attrib.get('name')
-        if varname not in variables:
-            continue
-        # dictionary
-        dictionary = {}
-        # variable
-        dictionary['variable'] = var.attrib.get('name')
-        
-        
-        # Process `labl` elements
-        for labl_elem in var.findall('labl'):
-            # Check if there is a language attribute
-            lang = labl_elem.get('{http://www.w3.org/XML/1998/namespace}lang')
-            if lang:
-                # Store text with 'label_<language>' key if lang attribute exists
-                dictionary[f'label_{lang}'] = labl_elem.text
-            else:
-                # Store text with 'label' key if no lang attribute exists
-                dictionary['label'] = labl_elem.text
-        
-        # Process `txt` elements
-        for txt_elem in var.findall('txt'):
-            # Check if there is a language attribute
-            lang = txt_elem.get('{http://www.w3.org/XML/1998/namespace}lang')
-            if lang:
-                # Store text with 'description_<language>' key if lang attribute exists
-                dictionary[f'description_{lang}'] = txt_elem.text
-            else:
-                # Store text with 'description' key if no lang attribute exists
-                dictionary['description'] = txt_elem.text
-        
-        # Process `catgry` elements to accumulate labels by language
-        for catgry_elem in var.findall('catgry'):
-            # Get the category value
-            catValu_elem = catgry_elem.find('catValu')
-            if catValu_elem is not None:
-                cat_value = catValu_elem.text
-            else:
-                continue  # Skip if there's no category value
-    
-            # Loop through `labl` elements within `catgry`
-            for labl_elem in catgry_elem.findall('labl'):
-                lang = labl_elem.get('{http://www.w3.org/XML/1998/namespace}lang', 'default')
-                # Construct the key for labels by language (e.g., 'labels_en', 'labels_de')
-                labels_key = f'labels_{lang}' if lang != 'default' else 'labels'
-                
-                # Initialize the dictionary for this language if not already present
-                if labels_key not in dictionary:
-                    dictionary[labels_key] = {}
-                
-                # Add the category value and corresponding label to the dictionary for the language
-                dictionary[labels_key][cat_value] = labl_elem.text
-        
-        # Process `varFormat` for type
-        varFormat_elem = var.find('varFormat')
-        if varFormat_elem is not None:
-            dictionary['type'] = varFormat_elem.get('type')
-        
-        # Process `ExtLink` for external URL
-        extLink_elem = var.find('.//notes/ExtLink')
-        if extLink_elem is not None:
-            dictionary['url'] = extLink_elem.get('URI')
-        
-        dictionaries[varname] = dictionary
-        
-    return dictionaries
       
 
 
@@ -123,7 +21,7 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
     """
     Read an Open Data Format (ODF) file into a Pandas DataFrame.
 
-    This function reads data from an ODF zipfile (data.csv and metadata.xml) and converts it into a pandas DataFrame.
+    This function reads data from an ODF zipfile (containing data.csv and metadata.xml) and converts it into a pandas DataFrame.
     It supports language selection, optional filtering of columns, skipping rows, and replacing specific values
     with NaN.
 
@@ -132,11 +30,9 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
     path : str
         The file path to the ODF file to be read.
     languages : str or list of str, default "all"
-        Specifies the language(s) to extract from the file. Use "all" to read all available languages,
-        or pass a single language code (e.g., "en").
+        Specifies the language(s) to extract from the file. Use "all" to read all available languages, or pass a single language code (e.g., "en").
     usecols : list of int or str, optional
-        Specifies the columns to be read from the file. If None, all columns are read.
-        Column selection can be by index or name.
+        Specifies the columns to be read from the file. If None, all columns are read. Column selection can be by index or name.
     skiprows : int or list of int, optional
         Line numbers to skip (0-indexed) at the start of the file. Can be used to skip metadata or headers.
     nrows : int, optional
@@ -151,9 +47,8 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
 
     Notes
     -----
-    - This function relies on the `odf2pd` library to parse ODF files. Ensure the library is installed.
     - The `languages` parameter allows for selecting specific localized data if the ODF file supports it.
-    - Metadata is stored in the `attrs` attribute of pandas objects,like df.attrs or df['variable_name'].attrs to call the meatadata.
+    - Metadata is stored in the `attrs` attribute of pandas objects- You can call the attributes with df.attrs or df['variable_name'].attrs.
 
     Examples
     --------
@@ -312,3 +207,106 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
     return df
         
 
+
+def make_dataset_dic(root):        
+    dictionary = {}  # Initialize the dictionary to store label entries
+    #study and dataset name
+    dictionary['study'] = root.findtext(".//stdyDscr/citation/titlStmt/titl")
+    dictionary['dataset'] = root.findtext(".//fileDscr/fileTxt/fileName")
+    # labels
+    titl_stmt = root.find('.//fileDscr/fileTxt/fileCitation/titlStmt')
+    if titl_stmt is not None:
+        # Loop through each child element in titlStmt
+        for elem in titl_stmt:
+            # Check if there is a language attribute
+            lang = elem.get('{http://www.w3.org/XML/1998/namespace}lang')
+            if lang:
+                # Store text with 'label_<language>' key if lang attribute exists
+                dictionary[f'label_{lang}'] = elem.text
+            else:
+                # Store text with 'label' key if no lang attribute exists
+                dictionary['label'] = elem.text
+    # Process descriptions in fileCont
+    for file_cont in root.findall('.//fileDscr/fileTxt/fileCont'):
+        lang = file_cont.get('{http://www.w3.org/XML/1998/namespace}lang')
+        if lang:
+            dictionary[f'description_{lang}'] = file_cont.text
+        else:
+            dictionary['description'] = file_cont.text
+    #URL
+    ExtLink = root.findall('.//fileDscr/notes/ExtLink')
+    if len(ExtLink) == 1:
+        dictionary['url'] = ExtLink[0].get('URI')
+
+    return dictionary
+
+def make_variables_dic(root, variables):        
+    dictionaries={}
+    
+    for var in root.findall('.//dataDscr/var'):
+        varname = var.attrib.get('name')
+        if varname not in variables:
+            continue
+        # dictionary
+        dictionary = {}
+        # variable
+        dictionary['variable'] = var.attrib.get('name')
+        
+        
+        # Process `labl` elements
+        for labl_elem in var.findall('labl'):
+            # Check if there is a language attribute
+            lang = labl_elem.get('{http://www.w3.org/XML/1998/namespace}lang')
+            if lang:
+                # Store text with 'label_<language>' key if lang attribute exists
+                dictionary[f'label_{lang}'] = labl_elem.text
+            else:
+                # Store text with 'label' key if no lang attribute exists
+                dictionary['label'] = labl_elem.text
+        
+        # Process `txt` elements
+        for txt_elem in var.findall('txt'):
+            # Check if there is a language attribute
+            lang = txt_elem.get('{http://www.w3.org/XML/1998/namespace}lang')
+            if lang:
+                # Store text with 'description_<language>' key if lang attribute exists
+                dictionary[f'description_{lang}'] = txt_elem.text
+            else:
+                # Store text with 'description' key if no lang attribute exists
+                dictionary['description'] = txt_elem.text
+        
+        # Process `catgry` elements to accumulate labels by language
+        for catgry_elem in var.findall('catgry'):
+            # Get the category value
+            catValu_elem = catgry_elem.find('catValu')
+            if catValu_elem is not None:
+                cat_value = catValu_elem.text
+            else:
+                continue  # Skip if there's no category value
+    
+            # Loop through `labl` elements within `catgry`
+            for labl_elem in catgry_elem.findall('labl'):
+                lang = labl_elem.get('{http://www.w3.org/XML/1998/namespace}lang', 'default')
+                # Construct the key for labels by language (e.g., 'labels_en', 'labels_de')
+                labels_key = f'labels_{lang}' if lang != 'default' else 'labels'
+                
+                # Initialize the dictionary for this language if not already present
+                if labels_key not in dictionary:
+                    dictionary[labels_key] = {}
+                
+                # Add the category value and corresponding label to the dictionary for the language
+                dictionary[labels_key][cat_value] = labl_elem.text
+        
+        # Process `varFormat` for type
+        varFormat_elem = var.find('varFormat')
+        if varFormat_elem is not None:
+            dictionary['type'] = varFormat_elem.get('type')
+        
+        # Process `ExtLink` for external URL
+        extLink_elem = var.find('.//notes/ExtLink')
+        if extLink_elem is not None:
+            dictionary['url'] = extLink_elem.get('URI')
+        
+        dictionaries[varname] = dictionary
+        
+    return dictionaries
