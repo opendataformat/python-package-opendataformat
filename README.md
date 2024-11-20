@@ -1,5 +1,6 @@
 # opendataformat 
 
+--- The python package is still under development ---
 ## Overview
 
 The `opendataformat` package is specifically designed to facilitate the seamless utilization of the Open Data Format. It offers functionality to import data from the Open Data Format into a Python pandas data frame, as well as export data from a Pandas data frame to the Open Data Format. You can easily access comprehensive information about the dataset and variables in Python. This user-friendly approach ensures convenient exploration and utilization of dataset information within your preferred environment.
