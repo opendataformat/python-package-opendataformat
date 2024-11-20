@@ -3,8 +3,8 @@ README.md
 setup.py
 opendataformat/__init__.py
 opendataformat/docu_odf.py
-opendataformat/odf2pd.py
-opendataformat/pd2odf.py
+opendataformat/read_odf.py
+opendataformat/write_odf.py
 opendataformat.egg-info/PKG-INFO
 opendataformat.egg-info/SOURCES.txt
 opendataformat.egg-info/dependency_links.txt

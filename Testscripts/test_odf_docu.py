@@ -20,7 +20,167 @@ os.chdir('C:/Users/thartl/OneDrive - DIW Berlin/Open Data Format Project/Python/
 
 class TestDocuODF(unittest.TestCase):
     def test_write_odf_default_args(self):
-        
+        expected_metadata = {
+            'bap87': {
+                'variable': 'bap87',
+                'label_en': 'Current Health',
+                'label_de': 'Gesundheitszustand gegenwärtig',
+                'description_en': 'Question: How would you describe your current health?',
+                'description_de': 'Frage: Wie würden Sie Ihren gegenwärtigen Gesundheitszustand beschreiben?',
+                'labels_en': {
+                    '-2': 'Does not apply', 
+                    '-1': 'No Answer', 
+                    '1': 'Very good', 
+                    '2': 'Good', 
+                    '3': 'Satisfactory', 
+                    '4': 'Poor', 
+                    '5': 'Bad'
+                },
+                'labels_de': {
+                    '-2': 'trifft nicht zu', 
+                    '-1': 'keine Angabe', 
+                    '1': 'Sehr gut', 
+                    '2': 'Gut', 
+                    '3': 'Zufriedenstellend', 
+                    '4': 'Weniger gut', 
+                    '5': 'Schlecht'
+                },
+                'type': 'numeric',
+                'url': 'https://paneldata.org/soep-core/data/bap/bap87'
+            },
+            'bap9201': {
+                'variable': 'bap9201',
+                'label_en': 'hours of sleep, normal workday',
+                'label_de': 'Stunden Schlaf, normaler Werktag',
+                'description_en': 'Sleep hours per weekday',
+                'description_de': 'Schlafstunden pro Wochentag',
+                'labels_en': {
+                    '-2': 'Does not apply', 
+                    '-1': 'No Answer'
+                },
+                'labels_de': {
+                    '-2': 'trifft nicht zu', 
+                    '-1': 'keine Angabe'
+                },
+                'type': 'numeric',
+                'url': 'https://paneldata.org/soep-core/data/bap/bap9201'
+            },
+            'bap9001': {
+                'variable': 'bap9001',
+                'label_en': 'Pressed For Time Last 4 Weeks',
+                'label_de': 'Eile, Zeitdruck letzten 4 Wochen',
+                'description_en': 'Frequency of feeling time pressure in the past 4 weeks',
+                'description_de': 'Häufigkeit des Gefühls von Zeitdruck in den letzten 4 Wochen',
+                'labels_en': {
+                    '-2': 'Does not apply', 
+                    '-1': 'No Answer', 
+                    '1': 'Always', 
+                    '2': 'Often', 
+                    '3': 'Sometimes', 
+                    '4': 'Almost Never', 
+                    '5': 'Never'
+                },
+                'labels_de': {
+                    '-2': 'trifft nicht zu', 
+                    '-1': 'keine Angabe', 
+                    '1': 'Immer', 
+                    '2': 'Oft', 
+                    '3': 'Manchmal', 
+                    '4': 'Fast nie', 
+                    '5': 'Nie'
+                },
+                'type': 'numeric',
+                'url': 'https://paneldata.org/soep-core/data/bap/bap9001'
+            },
+            'bap9002': {
+                'variable': 'bap9002',
+                'label_en': 'Run-down, Melancholy Last 4 Weeks',
+                'label_de': 'Niedergeschlagen letzten 4 Wochen',
+                'description_en': 'Frequency of feeling a sad and depressed state',
+                'description_de': 'Häufigkeit der Niedergeschlagenheit',
+                'labels_en': {
+                    '-2': 'Does not apply', 
+                    '-1': 'No Answer', 
+                    '1': 'Always', 
+                    '2': 'Often', 
+                    '3': 'Sometimes', 
+                    '4': 'Almost Never', 
+                    '5': 'Never'
+                },
+                'labels_de': {
+                    '-2': 'trifft nicht zu', 
+                    '-1': 'keine Angabe', 
+                    '1': 'Immer', 
+                    '2': 'Oft', 
+                    '3': 'Manchmal', 
+                    '4': 'Fast nie', 
+                    '5': 'Nie'
+                },
+                'type': 'numeric',
+                'url': 'https://paneldata.org/soep-core/data/bap/bap9002'
+            },
+            'bap9003': {
+                'variable': 'bap9003',
+                'label_en': 'Well-balanced Last 4 Weeks',
+                'label_de': 'Ausgeglichen letzten 4 Wochen',
+                'description_en': 'Frequency of feeling balance',
+                'description_de': 'Häufigkeit der Ausgeglichenheit',
+                'labels_en': {
+                    '-2': 'Does not apply', 
+                    '-1': 'No Answer', 
+                    '1': 'Always', 
+                    '2': 'Often', 
+                    '3': 'Sometimes', 
+                    '4': 'Almost Never', 
+                    '5': 'Never'
+                },
+                'labels_de': {
+                    '-2': 'trifft nicht zu', 
+                    '-1': 'keine Angabe', 
+                    '1': 'Immer', 
+                    '2': 'Oft', 
+                    '3': 'Manchmal', 
+                    '4': 'Fast nie', 
+                    '5': 'Nie'
+                },
+                'type': 'numeric',
+                'url': 'https://paneldata.org/soep-core/data/bap/bap9003'
+            },
+            'bap96': {
+                'variable': 'bap96',
+                'label_en': 'Height',
+                'label_de': 'Körpergröße',
+                'description_en': 'Body size',
+                'description_de': 'Körpergröße',
+                'labels_en': {
+                    '-2': 'Does not apply', 
+                    '-1': 'No Answer'
+                },
+                'labels_de': {
+                    '-2': 'trifft nicht zu', 
+                    '-1': 'keine Angabe'
+                },
+                'type': 'numeric',
+                'url': 'https://paneldata.org/soep-core/data/bap/bap96'
+            },
+            'name': {
+                'variable': 'name',
+                'label_en': 'Firstname',
+                'label_de': 'Vorname',
+                'description_en': 'Firstname',
+                'description_de': 'Vorname',
+                'labels_en': {
+                    '-2': 'Does not apply', 
+                    '-1': 'No Answer'
+                },
+                'labels_de': {
+                    '-2': 'trifft nicht zu', 
+                    '-1': 'keine Angabe'
+                },
+                'type': 'character',
+                'url': ''
+            }
+        }
         df = odf.read_odf(path = 'testdata/data.zip')
         odf.docu_odf(df)  
         df = odf.read_odf('testdata/data_with_default.zip')
@@ -29,7 +189,8 @@ class TestDocuODF(unittest.TestCase):
         odf.docu_odf(df)  
         
         df = odf.read_odf(path = 'testdata/data.zip')
-        odf.docu_odf(df['bap87'])  
+        metadict = odf.docu_odf(df['bap87'])  
+        self.assertEqual(metadict, expected_metadata['bap87'])
         df = odf.read_odf('testdata/data_with_default.zip')
         odf.docu_odf(df['bap87'])  
         df = odf.read_odf('testdata/data_with_missings.zip')

@@ -13,9 +13,6 @@ import shutil
 import zipfile
 import xml.dom.minidom
 
-
-# Set the working directory
-#os.chdir('C:/Users/thartl/OneDrive - DIW Berlin/Open Data Format Project/Python/python package/python package')
 """
 
 """
@@ -31,16 +28,15 @@ def write_odf(x, path, languages = "all"):
     Parameters
     ----------
     x : pandas.DataFrame or pandas.Series
-        The pandas object to be saved to the ODF file. It should have metadata stored
-        in the `attrs` attribute for inclusion in the output file metadata.xml.
+        The pandas object to be saved to the ODF file. It should have metadata stored in the `attrs` attribute for inclusion in the output file metadata.xml.
     path : str
-        The file path (including filename) where the ODF file will be saved.
-        Ensure the path ends with `.zip` to specify the correct file format.
+        The file path (including filename) where the ODF file will be saved. Ensure the path ends with `.zip` to specify the correct file format.
     languages : str or list of str, default "all"
         Specifies which language(s) of metadata to include in the ODF file.
         Options include:
         - "all": Include metadata for all available languages.
         - A single language code (e.g., "en").
+        - A list of language codes (e.g., ["en", "de"]).
         Edge cases like empty strings or `None` in the language list are handled gracefully.
 
     Returns
@@ -57,8 +53,7 @@ def write_odf(x, path, languages = "all"):
 
     Notes
     -----
-    - This function assumes the use of a library capable of handling ODF files (e.g., `opendataformat`).
-    - Metadata from the `attrs` attribute of `x` is included in the file, filtered by `languages` if specified.
+    - Metadata from the attributes (`attrs`) of `x` is included in the file.
     - Multilingual metadata, if present, is processed according to the `languages` parameter.
 
     Examples
@@ -66,7 +61,7 @@ def write_odf(x, path, languages = "all"):
     Write a DataFrame to an ODF file, including all metadata:
 
     >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]})
-    >>> df.attrs = {"label_en": "English Label", "label_fr": "French Label", "description": "Example dataset"}
+    >>> df.attrs = {"label_en": "English Label", "label_de": "German Label", "description_en": "Example dataset"}
     >>> write_odf(df, "output.zip")
 
     Write a DataFrame to an ODF file, filtering metadata by language:
@@ -75,7 +70,7 @@ def write_odf(x, path, languages = "all"):
 
     Write a DataFrame to an ODF file, including metadata for multiple languages:
 
-    >>> write_odf(df, "output.zip", languages=["en", "de"])
+    >>> write_odf(df, "output.zip", languages="all")
     """
 
     if (not isinstance(x, pd.DataFrame)):

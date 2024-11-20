@@ -9,6 +9,116 @@ import pandas as pd
 
 
 def docu_odf(x, metadata = "all", languages = "all"):
+    """
+    Extract and display metadata from a pandas DataFrame or pandas.Series.
+
+    This function processes the metadata stored in the `attrs` attribute of a pandas object,
+    allowing for selective extraction by metadata type or language. Metadata includes fields
+    such as labels, descriptions, and URLs.
+
+    Parameters
+    ----------
+    x : pandas.DataFrame or pandas.Series (single variable metadata)
+        The input pandas object from which metadata will be extracted.
+    metadata : str, default "all"
+        The type of metadata to extract. Options include:
+        - "all": Display all available metadata.
+        - "label", "labels": Display and return dataset or variable labels.
+        - "description": Display and return descriptions.
+        - "type": Display and return types.
+        - "url": Display and return URLs.
+        - "valuelabels": Display and return value labels.
+        Aliases for these options are supported (e.g., "Value labels" for "labels").
+    languages : str or list of str, default "all"
+        The language(s) to filter metadata by. Options include:
+        - "all": Process metadata for all languages.
+        - A single language code (e.g., "en").
+        - A list of language codes (e.g., ["en", "de"]).
+        Edge cases like empty strings or None are handled gracefully.
+
+    Returns
+    -------
+    dict or str
+        Extracted metadata as a dictionary. If only a single metadata field is found,
+        returns the metadata as a string instead.
+
+    Raises
+    ------
+    TypeError
+        If `x` is not a pandas DataFrame or Series.
+    ValueError
+        If `metadata` or `languages` contain invalid values.
+
+    Notes
+    -----
+    - Metadata is stored in the `attrs` attribute of pandas objects.
+    - This function supports multilingual metadata if provided in the input.
+
+    Examples
+    --------
+    Extract all metadata from a DataFrame:
+
+    >>> df = pd.DataFrame()
+    >>> df.attrs = {"label_en": "English Label", "label_fr": "French Label", "url": "https://example.com"}
+    >>> docu_odf(df)
+    label_en: English Label
+    label_fr: French Label
+    url: https://example.com
+
+    Extract specific metadata type:
+
+    >>> docu_odf(df, metadata="label")
+    label_en: English Label
+    label_fr: French Label
+
+    Extract metadata filtered by language:
+
+    >>> label = docu_odf(df, metadata="label", languages="en")
+    label_en: English Label
+    >>> print(label)
+    English Label
+    
+    Extract dataset level metadata from a DataFrame:
+
+    >>> df = read_odf("example_dataset.zip")
+    >>> df.attrs = {'study': 'study name', 
+            'dataset': 'dataset name',
+            'label_en': 'label in english',
+            'label_de': 'label in german',
+            'description_en': 'details in english',
+            'description_de': 'details in german',
+            'url': 'https://example.url'}
+    >>> docu_odf(df)
+    study: study name
+    dataset: dataset name
+    label_en: label in english
+    label_de: label in german
+    description_en: details in english
+    description_de: details in german
+    url: https://example.url
+    
+    Extract specific variable metadata:
+
+    >>> docu_odf(df['variable_name'])
+    name:variable
+    label_en: english label
+    label_de: german label
+    url: https://example.url
+
+    Extract specific metadata type:
+
+    >>> docu_odf(df, metadata="label")
+    label_en: English label
+    label_de: German label
+
+    Extract metadata filtered by language:
+
+    >>> label = docu_odf(df, metadata="label", languages="en")
+    label_en: English Label
+    >>> print(label)
+    English Label
+    """
+    
     if not isinstance(x, (pd.DataFrame, pd.Series)):
         TypeError('x is not a pandas data frame or a columns of a pandas data frame')
         
@@ -27,11 +137,14 @@ def docu_odf(x, metadata = "all", languages = "all"):
         raise ValueError("languages  not valid")
 
     if metadata=='all':
+        metadata_out = {}
         for key, value in x.attrs.items():
-            if key in ['dataset', 'url']:
+            if key in ['dataset', 'url', 'type']:
                 print(f'{key}: {value}')
+                metadata_out[key] = value
             elif 'labels' in key:
                 if (languages == 'all'):
+                    metadata_out[key] = value
                     if key == 'labels':
                         lang = ''
                     else:
@@ -41,15 +154,21 @@ def docu_odf(x, metadata = "all", languages = "all"):
                         print(f'{val}:   {lab}')
                 else:
                     if key.split('_')[-1] in languages:
+                        metadata_out[key] = value
                         print(f'Value Labels {key.split("_")[-1]}:')
                         for val, lab in value.items():
                             print(f'{val}:   {lab}')
             else:
                 if (languages == 'all'):
                     print(f'{key}: {value}')
+                    metadata_out[key] = value
                 else:
                     if key.split('_')[-1] in languages:
                         print(f'{key}: {value}')
+                        metadata_out[key] = value
+        return metadata_out
+
+                    
     else:
         if metadata in ['Labels', 'labels', 'label', 'Label']:
             metadata = 'label'

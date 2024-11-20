@@ -137,11 +137,14 @@ def docu_odf(x, metadata = "all", languages = "all"):
         raise ValueError("languages  not valid")
 
     if metadata=='all':
+        metadata_out = {}
         for key, value in x.attrs.items():
-            if key in ['dataset', 'url']:
+            if key in ['dataset', 'url', 'type']:
                 print(f'{key}: {value}')
+                metadata_out[key] = value
             elif 'labels' in key:
                 if (languages == 'all'):
+                    metadata_out[key] = value
                     if key == 'labels':
                         lang = ''
                     else:
@@ -151,15 +154,21 @@ def docu_odf(x, metadata = "all", languages = "all"):
                         print(f'{val}:   {lab}')
                 else:
                     if key.split('_')[-1] in languages:
+                        metadata_out[key] = value
                         print(f'Value Labels {key.split("_")[-1]}:')
                         for val, lab in value.items():
                             print(f'{val}:   {lab}')
             else:
                 if (languages == 'all'):
                     print(f'{key}: {value}')
+                    metadata_out[key] = value
                 else:
                     if key.split('_')[-1] in languages:
                         print(f'{key}: {value}')
+                        metadata_out[key] = value
+        return metadata_out
+
+                    
     else:
         if metadata in ['Labels', 'labels', 'label', 'Label']:
             metadata = 'label'
