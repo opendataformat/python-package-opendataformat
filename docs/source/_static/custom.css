@@ -1,0 +1,9 @@
+div.sphinxsidebar {
+    float: left;
+    width: 230px;
+    margin-left: -100%;
+    font-size: 68%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
