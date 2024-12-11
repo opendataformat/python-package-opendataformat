@@ -1,6 +1,8 @@
 cff-version: 0.0.1
 message: "If you use this software, please cite it as below."
 authors:
+  - family-names: Han
+    given-names: Xiaoyao
   - family-names: Hartl
     given-names: Tom
     orcid: https://orcid.org/0009-0006-4226-9835
