@@ -11,8 +11,9 @@ import pandas as pd
 import zipfile
 import xml.etree.ElementTree as ET
 import os
-
-
+from tempfile import gettempdir
+from urllib.request import urlretrieve
+from urllib.parse import urlparse
 
       
 
@@ -53,12 +54,12 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
     Examples
     --------
     Read an ODF file and load all columns:
-
-    >>> df = read_odf("example_dataset.zip")
+    >>> import opendataformat as odf
+    >>> df = odf.read_odf("example_dataset.zip")
 
     Read an ODF zipfile, selecting specific language:
 
-    >>> df = read_odf("example.zip", language="en")
+    >>> df = odf.read_odf("example.zip", languages="en")
 
     """
     
@@ -67,9 +68,29 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
     if (not path.endswith(".zip") and not os.path.exists(path)) or (not path.endswith(".zip") and os.path.exists(path + ".zip")) :
         path = path + ".zip"
 
-    if not os.path.exists(path):
+    if not os.path.exists(path) and not is_url(path):
         raise FileNotFoundError(f"The file {path} was not found.")
     
+    # Download file to tempdir if path is URL
+    if is_url(path):
+        # Get the system's temporary directory
+        temp_dir = gettempdir()
+        
+        fname = path.split("/")[-1]
+        # Define the full path where the file will be saved
+        file_path = os.path.join(temp_dir, fname)
+        
+        # Download the file using urllib
+        try:
+            urlretrieve(path, file_path)
+        except Exception:
+            raise Exception("Downloading file from URL failed.")
+        
+        path = file_path
+        
+        if not os.path.exists(path):
+            FileNotFoundError(f"The file {path} was not found.")
+        
     if not path.endswith(".zip") and (not os.path.exists(path + "/data.csv") or not os.path.exists(path + "/metadata.xml")):
         raise FileNotFoundError(f"A file {path + '.zip'} was not found and in the folder {path} expected metadata.xml and data.csv.")
     
@@ -310,3 +331,8 @@ def make_variables_dic(root, variables):
         dictionaries[varname] = dictionary
         
     return dictionaries
+
+def is_url(path):
+    parsed = urlparse(path)
+    # A URL typically has a scheme (e.g., "http", "https") and a network location (netloc)
+    return bool(parsed.scheme) and bool(parsed.netloc)
