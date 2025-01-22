@@ -1,0 +1,59 @@
+<?xml version="1.0" ?>
+<codeBook xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="ddi:codebook:2_5" xsi:schemaLocation="ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd" version="2.5">
+  <stdyDscr>
+    <citation>
+      <titlStmt>
+        <titl>generated_extrem_values_long_strings</titl>
+      </titlStmt>
+    </citation>
+  </stdyDscr>
+  <fileDscr>
+    <fileTxt>
+      <fileName>data_special_values</fileName>
+      <fileCitation>
+        <titlStmt>
+          <titl xml:lang="en">dataset with very large values and long strings</titl>
+        </titlStmt>
+      </fileCitation>
+    </fileTxt>
+    <notes>
+      <ExtLink URI=""/>
+    </notes>
+  </fileDscr>
+  <dataDscr>
+    <var name="large_vals">
+      <labl xml:lang="en">Large values</labl>
+      <txt xml:lang="en">Extreme large positive and negative values</txt>
+      <varFormat type="numeric"/>
+      <notes>
+        <ExtLink URI=""/>
+      </notes>
+    </var>
+    <var name="floats">
+      <labl xml:lang="en">floats with extreme values</labl>
+      <txt xml:lang="en">floats with very small and very precise numbers</txt>
+      <catgry>
+        <catValu>-2</catValu>
+        <labl xml:lang="en">Does not apply</labl>
+        <labl xml:lang="de">trifft nicht zu</labl>
+      </catgry>
+      <catgry>
+        <catValu>-1</catValu>
+        <labl xml:lang="en">No Answer</labl>
+        <labl xml:lang="de">keine Angabe</labl>
+      </catgry>
+      <varFormat type="numeric"/>
+      <notes>
+        <ExtLink URI=""/>
+      </notes>
+    </var>
+    <var name="long_strings">
+      <labl xml:lang="en">Long Strings</labl>
+      <txt xml:lang="en">Very long strings with special signs</txt>
+      <varFormat type="character"/>
+      <notes>
+        <ExtLink URI=""/>
+      </notes>
+    </var>
+  </dataDscr>
+</codeBook>

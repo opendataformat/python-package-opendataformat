@@ -123,6 +123,14 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
                         skiprows = list(range(skiprows))
                     skiprows = [x + 1 for x in skiprows]
                 df = pd.read_csv(csv_file, encoding='UTF-8', usecols = usecols, skiprows=skiprows, nrows=nrows, na_values = na_values)
+                
+                # Convert integer values with NAN from float to integer
+                for col in df.columns:
+                    if df[col].dtype == 'float64':
+                        # Check if all values are integers (ignoring NaNs)
+                        if df[col].dropna().apply(lambda x: x % 1 == 0).all():
+                            df[col] = df[col].astype('Int64')  # Convert to nullable integer
+                
                 if usecols != None and all(isinstance(item, str) for item in usecols):
                     df = df[usecols]
 
@@ -189,6 +197,14 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
                 skiprows = list(range(skiprows))
             skiprows = [x + 1 for x in skiprows]
         df = pd.read_csv(data_csv_path, encoding='UTF-8', usecols = usecols, skiprows=skiprows, nrows=nrows, na_values = na_values)
+        
+        # Convert integer values with NAN from float to integer
+        for col in df.columns:
+            if df[col].dtype == 'float64':
+                # Check if all values are integers (ignoring NaNs)
+                if df[col].dropna().apply(lambda x: x % 1 == 0).all():
+                    df[col] = df[col].astype('Int64')  # Convert to nullable integer
+                    
         if usecols != None and all(isinstance(item, str) for item in usecols):
             df = df[usecols]
 

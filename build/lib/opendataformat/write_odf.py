@@ -12,7 +12,8 @@ import xml.etree.ElementTree as ET
 import shutil
 import zipfile
 import xml.dom.minidom
-
+import csv
+import numpy as np
 """
 
 """
@@ -105,10 +106,30 @@ def write_odf(x, path, languages = "all"):
 
     # Create the directory
     os.makedirs(temp_subdir, exist_ok=True)
-
-
+    
+    #function to reformat floats to conserve all digits 
+    # in non-scientific notation
+    def custom_formatter(x):
+        if isinstance(x, float):
+            if np.isnan(x):  # Check if the value is NaN
+                return np.nan  # Preserve NaN as-is
+            return np.format_float_positional(x, trim='-')
+        return x
+    
+    x_reformatted = x.applymap(custom_formatter)
+    
+    # re-add the attributes
+    for col in list(x.columns):
+        x_reformatted[col].attrs = x[col].attrs
+    x = x_reformatted
     # write raw data as csv to the output folder
-    x.to_csv(temp_dir + "/" + filename.split('.')[0] + "/data.csv", index = False)
+    x.to_csv(temp_dir + "/" + filename.split('.')[0] + "/data.csv", 
+             index = False,
+             encoding = 'utf-8',
+             quotechar='"',
+             quoting=csv.QUOTE_MINIMAL,
+             float_format='%.15f')
+
     
     # Create the root element
     root = ET.Element("codeBook", {
