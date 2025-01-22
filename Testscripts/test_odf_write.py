@@ -306,6 +306,14 @@ class TestWriteODF(unittest.TestCase):
         
         odf.write_odf(x = df, path='testoutput' + '/data_special_values.zip')
         
+        df2 = odf.read_odf(path = 'testoutput' + '/data_special_values.zip')
+        suma = sum(df['large_vals'])
+        self.assertEqual(sum(df['large_vals']), sum(df2['large_vals']))
+        self.assertEqual(sum(df['large_vals']), -216868392221803)
+        self.assertEqual(sum(df['floats']), sum(df2['floats']))
+        self.assertEqual(sum(df['floats']), 3.9537558972732)
+
+        
         with zipfile.ZipFile('testoutput' + '/data_special_values.zip', 'r') as zip_file:
             self.assertTrue('data.csv' in zip_file.namelist())
             self.assertTrue('metadata.xml' in zip_file.namelist())
