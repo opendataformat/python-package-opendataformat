@@ -4,16 +4,8 @@
 
 The `opendataformat` package is specifically designed to facilitate the seamless utilization of the Open Data Format (ODF). It offers functionality to import data from the Open Data Format into a Python pandas data frame, as well as export data from a Pandas data frame to the Open Data Format. You can easily access comprehensive information about the dataset and variables in Python. This user-friendly approach ensures convenient exploration and utilization of dataset information within your preferred environment.
 
-For more comprehensive insights into the Open Data Format specification, please visit: [Open Data Format Specification](https://opendataformat.github.io/specification). This resource provides detailed documentation and profiles illustrating the storage locations of attributes within the Open Data Format, as well as within the native formats to which they will be converted. Additionally, you will have access to a practical example of [real data in the Open Data Format](https://git.soep.de/opendata/open-data-package).
+For more comprehensive insights into the Open Data Format specification, please visit: [Open Data Format Specification](https://opendataformat.github.io/specification). This resource provides detailed documentation and profiles illustrating the storage locations of attributes within the Open Data Format, as well as within the native formats to which they will be converted. Additionally, you can download a practical example of [real data in the Open Data Format](https://opendataformat.github.io/files/example_dataset.zip).
 
-## Installation
-
-``` py
-
-# You can install the development version from GitHub:
-pip install git+https://github.com/opendataformat/python-package-opendataformat.git
-
-```
 
 ## Getting started
 
