@@ -2,6 +2,10 @@
 
 from setuptools import setup, find_packages
 
+# Read the README file
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+    
 setup(
     name='opendataformat',
     version='0.1.1',
@@ -14,7 +18,9 @@ setup(
         'pandas',
     ],
     description='The Open Data Format (ODF) is a new, non-proprietary, multilingual, metadata enriched, and zip-compressed data format with metadata structured in the Data Documentation Initiative (DDI) Codebook standard. This package allows reading and writing of data files in the Open Data Format (ODF) in R, and displaying metadata in different languages. For further information on the Open Data Format, see <https://opendataformat.github.io/>.',
-    author='Xiaoyao Han',
+    long_description=long_description,
+    long_description_content_type="text/markdown"
+    author='Xiaoyao Han, Tom Hartl',
     author_email='xhan@diw.de',
     url='https://github.com/opendataformat/py-package-opendataformat',  # Replace with your GitHub URL
     classifiers=[
