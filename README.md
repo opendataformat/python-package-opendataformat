@@ -34,4 +34,4 @@ The language codes are defined by the [ISO 639-1](https://de.wikipedia.org/wiki/
 ## Getting help
 
 If you encounter a clear bug, please file a minimal reproducible example
-on **https://github.com/thartl-diw/py-package-opendataformat/issues**. 
+on **https://github.com/opendataformat/python-package-opendataformat/issues**. 
