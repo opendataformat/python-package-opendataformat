@@ -15,11 +15,11 @@ import opendataformat as odf
 
 The opendataformat package consists of five main functions:
 
-- `odf.read_odf()` to read an Open Data Format file in Pandas. This function takes an input parameter "path", which is the path to the Open Data Format ZIP file.
+- `odf.read_odf()` to read an Open Data Format file in Pandas. This function takes an input parameter "filepath", which is the path to the Open Data Format ZIP file.
 
 - `odf.docu_odf()` to display or retrieve metadata for a ODF data frame or a variable / column.
 
-- `odf.write_odf()` to write the Pandas Dataframe to an Open Data Format ZIP file. By specifying the dataframe input and providing the output directory path the function will generate a ODF ZIP file (.odf.zip) containing the dataset as "data.csv" and "metadata.xml", as well as an version file (since ODF version 1.1.0).
+- `odf.write_odf()` to write the Pandas Dataframe to an Open Data Format ZIP file. By specifying the dataframe input and providing the output directory path the function will generate a ODF ZIP file (.odf.zip) containing the dataset as "data.csv" and "metadata.xml", as well as an version file "odf-version.json" (since ODF version 1.1.0).
 
 
 ### Multilingual Datasets
