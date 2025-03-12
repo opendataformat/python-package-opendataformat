@@ -14,11 +14,13 @@ import os
 from tempfile import gettempdir
 from urllib.request import urlretrieve
 from urllib.parse import urlparse
+import json
+import warnings
 
       
 
 
-def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None, na_values = None):
+def read_odf(filepath, languages = "all", usecols = None, skiprows=None, nrows=None, na_values = None):
     """
     Read an Open Data Format (ODF) file into a Pandas DataFrame.
 
@@ -28,7 +30,7 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
 
     Parameters
     ----------
-    path : str
+    filepath : str
         The file path to the ODF file to be read.
     languages : str or list of str, default "all"
         Specifies the language(s) to extract from the file. Use "all" to read all available languages, or pass a single language code (e.g., "en").
@@ -55,69 +57,108 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
     --------
     Read an ODF file and load all columns:
     >>> import opendataformat as odf
-    >>> df = odf.read_odf("example_dataset.zip")
+    >>> df = odf.read_odf("example_dataset.odf.zip")
 
     Read an ODF zipfile, selecting specific language:
 
-    >>> df = odf.read_odf("example.zip", languages="en")
+    >>> df = odf.read_odf("example_dataset.odf.zip", languages="en")
 
     """
     
-    # if path has not suffix .zip" but a ".zip" file exists, .zip" is added to path
-    # if no file zipped file exists, but a folder with the name exists, the function tries to read
-    if (not path.endswith(".zip") and not os.path.exists(path)) or (not path.endswith(".zip") and os.path.exists(path + ".zip")) :
-        path = path + ".zip"
+    # Check if file exists or is a URL
+    def is_url(path):
+        parsed = urlparse(path)
+        # A URL typically has a scheme (e.g., "http", "https") and a network location (netloc)
+        return bool(parsed.scheme) and bool(parsed.netloc)
 
-    if not os.path.exists(path) and not is_url(path):
-        raise FileNotFoundError(f"The file {path} was not found.")
+    if not os.path.exists(filepath) and not is_url(filepath):
+        raise FileNotFoundError(f"The file {filepath} was not found.")
     
-    # Download file to tempdir if path is URL
-    if is_url(path):
+    # Download file to tempdir if filepath is URL
+    if is_url(filepath):
         # Get the system's temporary directory
         temp_dir = gettempdir()
         
-        fname = path.split("/")[-1]
+        fname = filepath.split("/")[-1]
         # Define the full path where the file will be saved
-        file_path = os.path.join(temp_dir, fname)
+        download_file_path = os.path.join(temp_dir, fname)
         
         # Download the file using urllib
         try:
-            urlretrieve(path, file_path)
+            urlretrieve(filepath, download_file_path)
         except Exception:
             raise Exception("Downloading file from URL failed.")
         
-        path = file_path
+        filepath = download_file_path
         
-        if not os.path.exists(path):
-            FileNotFoundError(f"The file {path} was not found.")
-        
-    if not path.endswith(".zip") and (not os.path.exists(path + "/data.csv") or not os.path.exists(path + "/metadata.xml")):
-        raise FileNotFoundError(f"A file {path + '.zip'} was not found and in the folder {path} expected metadata.xml and data.csv.")
+        if not os.path.exists(filepath):
+            FileNotFoundError(f"The file {filepath} was not found.")
     
-    if '.zip' not in path:
+    #check if input is a zipped file of an unzipped folder
+    if '.zip' not in filepath:
         file_not_zipped = True
     else:
         file_not_zipped = False
 
+    #read version file
+    if file_not_zipped == False:
+        with zipfile.ZipFile(filepath, 'r') as zip_ref:    
+            # read the version file if existing        
+            if 'odf-version.json' in zip_ref.namelist():
+                with zip_ref.open('odf-version.json') as json_file:
+                    version_file = json.load(json_file)  # Read and parse JSON
+                if 'version' not in version_file  or 'files' not in version_file or 'data' not in version_file.get('files', {}) or 'metadata' not in version_file.get('files', {}):
+                    warnings.warn(f"Version file in {filepath} is corrupt and (partly) ignored.", UserWarning)
+                odf_version = version_file.get('version', '1.1.0')
+                vers_files = version_file.get('files', {'data': 'data.csv', 'metadata': 'metadata.xml'})
+                datafile = vers_files.get('data', 'data.csv')
+                metadatafile = vers_files.get('metadata', 'metadata.xml')
+            else:
+                odf_version='1.0.0'
+                datafile = 'data.csv'
+                metadatafile = 'metadata.xml'
+    else:
+        # read the version file if existing        
+        if os.path.isfile(os.path.join(filepath, 'odf-version.json')):
+            with open(os.path.join(filepath, 'odf-version.json'), "r") as f:
+                vers_file = json.load(f)  # Load JSON content
+                odf_version = vers_file['version']
+                datafile = vers_file['files']['data']
+                metadatafile = vers_file['files']['metadata']
+        else:
+            odf_version='1.0.0'
+            datafile = 'data.csv'
+            metadatafile = 'metadata.xml'
+
+    
+
+    #if input is a unzipped folder, check if data and metadatafile are available
+    if not filepath.endswith(".zip") and (not os.path.exists(filepath + "/" + datafile) or not os.path.exists(filepath + "/" + metadatafile)):
+        raise FileNotFoundError(f"A file {filepath + '.zip'} was not found and in the folder {filepath} expected {metadatafile} and {datafile}.")
+    
 
     if file_not_zipped == False:
+        
         # Open zip data and xml file in it   
-        with zipfile.ZipFile(path, 'r') as zip_ref:    
-            if 'data.csv' not in zip_ref.namelist():
-                    raise Exception(f"Expected data.csv in {path}")
-            if 'metadata.xml' not in zip_ref.namelist():
-                    raise Exception(f"Expected metadata.xml in {path}")
+        with zipfile.ZipFile(filepath, 'r') as zip_ref:    
+
+            #check if data and metadata file are in the zip file
+            if datafile not in zip_ref.namelist():
+                    raise Exception(f"Expected {datafile} in {filepath}")
+            if metadatafile not in zip_ref.namelist():
+                    raise Exception(f"Expected {metadatafile} in {filepath}")
+            
             try:
-                root=ET.fromstring(zip_ref.read('metadata.xml'))
+                root=ET.fromstring(zip_ref.read(metadatafile))
             except Exception as e:
-                raise Exception(f"{type(e).__name__} in reading metadata.xml in {path}. Check the xml file in the data file")
+                raise Exception(f"{type(e).__name__} in reading metadata.xml in {filepath}. Check the xml file in the data file")
             
             # Iterate through the tags in xml and remove prefix of each tag
             for i in root.iter():
                 i.tag=i.tag.split('}')[-1]
                 #print(i.tag)
             #read the csv file
-            with zip_ref.open('data.csv') as csv_file:            
+            with zip_ref.open(datafile) as csv_file:            
                 if (skiprows != None):
                     if (type(skiprows) == int):
                         skiprows = list(range(skiprows))
@@ -170,18 +211,20 @@ def read_odf(path, languages = "all", usecols = None, skiprows=None, nrows=None,
                     df[var_name].attrs=attributes
                     
     elif file_not_zipped == True:
-        metadata_path = os.path.join(path, 'metadata.xml')
-        data_csv_path = os.path.join(path, 'data.csv')
+        
+
+        metadata_path = os.path.join(filepath, metadatafile)
+        data_csv_path = os.path.join(filepath, datafile)
 
         # Ensure files exist
         if not os.path.exists(metadata_path) or not os.path.exists(data_csv_path):
-            raise ValueError("Expected metadata.xml and data.csv in {path}")
+            raise ValueError("Expected metadata.xml and data.csv in {filepath}")
 
         # Parse metadata.xml directly
         try:
             tree = ET.parse(metadata_path)
         except Exception as e:
-            raise Exception(f"{type(e).__name__} in reading metadata.xml in {path}. Check the xml file in the data file")
+            raise Exception(f"{type(e).__name__} in reading metadata.xml in {filepath}. Check the xml file in the data file")
 
         root = tree.getroot()
 
@@ -347,8 +390,3 @@ def make_variables_dic(root, variables):
         dictionaries[varname] = dictionary
         
     return dictionaries
-
-def is_url(path):
-    parsed = urlparse(path)
-    # A URL typically has a scheme (e.g., "http", "https") and a network location (netloc)
-    return bool(parsed.scheme) and bool(parsed.netloc)

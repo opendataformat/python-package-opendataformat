@@ -30,7 +30,7 @@ def csvs_equal(zip_path1, zip_path2):
         """Extracts the content of a CSV file from the ZIP archive as a string."""
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             if filename not in zip_ref.namelist():
-                raise FileNotFoundError(f"'{filename}' not found in {zip_path}")
+                raise FileNotFoundError(f"Error in csvs_equal: '{filename}' not found in {zip_path}")
             with zip_ref.open(filename) as file:
                 return file.read().decode('utf-8')
     
@@ -115,14 +115,243 @@ class TestWriteODF(unittest.TestCase):
     def test_write_odf_standard(self):
         os.makedirs('testoutput', exist_ok=True)
         
-        df = odf.read_odf(path = 'testdata/data.zip')
+        df = odf.read_odf(filepath = 'testdata/data.odf.zip')
         
         
-        odf.write_odf(x = df, path='testoutput' + '/data.zip')
+        odf.write_odf(x = df, filepath ='testoutput' + '/data.odf.zip')
+        
+        with zipfile.ZipFile('testoutput' + '/data.odf.zip', 'r') as zip_file:
+            self.assertTrue('data.csv' in zip_file.namelist())
+            self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertTrue('odf-version.json' in zip_file.namelist())
+            rootnew=ET.fromstring(zip_file.read('metadata.xml'))
+        with zipfile.ZipFile('testdata/data.odf.zip', 'r') as zip_file:    
+            rootorig=ET.fromstring(zip_file.read('metadata.xml'))
+
+        # Test for element equality
+        self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
+        if (ET.tostring(rootorig) != ET.tostring(rootnew)):
+            xml_tree_equal(rootorig, rootnew)
+            
+        # Check equality of CSV
+        self.assertTrue(csvs_equal('testdata/data.odf.zip','testoutput' + '/data.odf.zip' ))
+            
+    def test_write_odf_default_lang(self):
+        
+        os.makedirs('testoutput', exist_ok=True)
+        
+        df = odf.read_odf(filepath = 'testdata/data_with_default.odf.zip')
+        
+        
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_with_default.odf.zip')
+        
+        with zipfile.ZipFile('testoutput' + '/data_with_default.odf.zip', 'r') as zip_file:
+            self.assertTrue('data.csv' in zip_file.namelist())
+            self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertTrue('odf-version.json' in zip_file.namelist())
+            rootnew=ET.fromstring(zip_file.read('metadata.xml'))
+        with zipfile.ZipFile('testdata/data_with_default.odf.zip', 'r') as zip_file:    
+            rootorig=ET.fromstring(zip_file.read('metadata.xml'))
+
+        # Test for element equality
+        self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
+        if (ET.tostring(rootorig) != ET.tostring(rootnew)):
+            xml_tree_equal(rootorig, rootnew)
+        
+        # Check equality of CSV
+        self.assertTrue(csvs_equal('testdata/data_with_default.odf.zip','testoutput' + '/data_with_default.odf.zip' ))
+        
+        
+    def test_write_odf_with_missings(self):
+        
+
+        os.makedirs('testoutput', exist_ok=True)
+        
+        df = odf.read_odf(filepath = 'testdata/data_with_missings.odf.zip')
+        
+        
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_with_missings.odf.zip')
+        
+        with zipfile.ZipFile('testoutput' + '/data_with_missings.odf.zip', 'r') as zip_file:
+            self.assertTrue('data.csv' in zip_file.namelist())
+            self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertTrue('odf-version.json' in zip_file.namelist())
+            rootnew=ET.fromstring(zip_file.read('metadata.xml'))
+        with zipfile.ZipFile('testdata/data_with_missings.odf.zip', 'r') as zip_file:    
+            rootorig=ET.fromstring(zip_file.read('metadata.xml'))
+
+        # Test for element equality
+        self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
+        if (ET.tostring(rootorig) != ET.tostring(rootnew)):
+            xml_tree_equal(rootorig, rootnew)
+            
+        # Check equality of CSV
+        self.assertTrue(csvs_equal('testdata/data_with_missings.odf.zip','testoutput' + '/data_with_missings.odf.zip' ))
+
+    def test_write_odf_lang_standard(self):
+        os.makedirs('testoutput', exist_ok=True)
+        
+        df = odf.read_odf(filepath = 'testdata/data.odf.zip')
+        
+        
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_de.odf.zip', languages = "de")
+        
+        with zipfile.ZipFile('testoutput' + '/data_de.odf.zip', 'r') as zip_file:
+            self.assertTrue('data.csv' in zip_file.namelist())
+            self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertTrue('odf-version.json' in zip_file.namelist())
+            rootnew=ET.fromstring(zip_file.read('metadata.xml'))
+        with zipfile.ZipFile('testdata/data_de.zip', 'r') as zip_file:    
+            rootorig=ET.fromstring(zip_file.read('metadata.xml'))
+
+        # Test for element equality
+        self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
+        if (ET.tostring(rootorig) != ET.tostring(rootnew)):
+            xml_tree_equal(rootorig, rootnew)
+        # Check equality of CSV
+        self.assertTrue(csvs_equal('testdata/data.odf.zip','testoutput' + '/data_de.odf.zip' ))
+
+    def test_write_odf_lang_standard2(self):
+        os.makedirs('testoutput', exist_ok=True)
+        
+        df = odf.read_odf(filepath = 'testdata/data.odf.zip')
+        
+        
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_de.odf.zip', languages = ["de"])
+        
+        with zipfile.ZipFile('testoutput' + '/data_de.odf.zip', 'r') as zip_file:
+            self.assertTrue('data.csv' in zip_file.namelist())
+            self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertTrue('odf-version.json' in zip_file.namelist())
+            rootnew=ET.fromstring(zip_file.read('metadata.xml'))
+        with zipfile.ZipFile('testdata/data_de.zip', 'r') as zip_file:    
+            rootorig=ET.fromstring(zip_file.read('metadata.xml'))
+
+        # Test for element equality
+        self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
+        if (ET.tostring(rootorig) != ET.tostring(rootnew)):
+            xml_tree_equal(rootorig, rootnew)
+        # Check equality of CSV
+        self.assertTrue(csvs_equal('testdata/data.odf.zip','testoutput' + '/data_de.odf.zip' ))
+
+    def test_write_odf_lang_default(self):
+        os.makedirs('testoutput', exist_ok=True)
+        
+        df = odf.read_odf(filepath = 'testdata/data_with_default.odf.zip')
+        
+        
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_en_none.odf.zip', languages = ["en", ''])
+        
+        with zipfile.ZipFile('testoutput' + '/data_en_none.odf.zip', 'r') as zip_file:
+            self.assertTrue('data.csv' in zip_file.namelist())
+            self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertTrue('odf-version.json' in zip_file.namelist())
+            rootnew=ET.fromstring(zip_file.read('metadata.xml'))
+        with zipfile.ZipFile('testdata/data_en_none.zip', 'r') as zip_file:    
+            rootorig=ET.fromstring(zip_file.read('metadata.xml'))
+
+        # Test for element equality
+        self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
+        if (ET.tostring(rootorig) != ET.tostring(rootnew)):
+            xml_tree_equal(rootorig, rootnew)
+            
+        # Check equality of CSV
+        self.assertTrue(csvs_equal('testdata/data_with_default.odf.zip','testoutput' + '/data_en_none.odf.zip' ))
+            
+    def test_write_odf_lang_default2(self):
+        os.makedirs('testoutput', exist_ok=True)
+        
+        df = odf.read_odf(filepath = 'testdata/data_with_default.odf.zip')
+        
+        
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_en_none.odf.zip', languages = ["en", None])
+        
+        with zipfile.ZipFile('testoutput' + '/data_en_none.odf.zip', 'r') as zip_file:
+            self.assertTrue('data.csv' in zip_file.namelist())
+            self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertTrue('odf-version.json' in zip_file.namelist())
+            rootnew=ET.fromstring(zip_file.read('metadata.xml'))
+        with zipfile.ZipFile('testdata/data_en_none.zip', 'r') as zip_file:    
+            rootorig=ET.fromstring(zip_file.read('metadata.xml'))
+
+        # Test for element equality
+        self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
+        if (ET.tostring(rootorig) != ET.tostring(rootnew)):
+            xml_tree_equal(rootorig, rootnew)
+            
+        # Check equality of CSV
+        self.assertTrue(csvs_equal('testdata/data_with_default.odf.zip','testoutput' + '/data_en_none.odf.zip' ))
+
+    def test_write_odf_lang_with_missing(self):
+        os.makedirs('testoutput', exist_ok=True)
+        
+        df = odf.read_odf(filepath = 'testdata/data_with_missings.odf.zip')
+        
+        
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_with_missings_en.odf.zip', languages = ["en"])
+        
+        with zipfile.ZipFile('testoutput' + '/data_with_missings_en.odf.zip', 'r') as zip_file:
+            self.assertTrue('data.csv' in zip_file.namelist())
+            self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertTrue('odf-version.json' in zip_file.namelist())
+            rootnew=ET.fromstring(zip_file.read('metadata.xml'))
+        with zipfile.ZipFile('testdata/data_with_missings_en.zip', 'r') as zip_file:    
+            rootorig=ET.fromstring(zip_file.read('metadata.xml'))
+
+        # Test for element equality
+        self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
+        if (ET.tostring(rootorig) != ET.tostring(rootnew)):
+            xml_tree_equal(rootorig, rootnew)
+         
+        # Check equality of CSV
+        self.assertTrue(csvs_equal('testdata/data_with_missings.odf.zip','testoutput' + '/data_with_missings_en.odf.zip' ))
+        
+    def test_write_odf_with_special_values(self):
+        os.makedirs('testoutput', exist_ok=True)
+        
+        df = odf.read_odf(filepath = 'testdata/data_special_values.odf.zip')
+        
+        
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_special_values.odf.zip')
+        
+        df2 = odf.read_odf(filepath = 'testoutput' + '/data_special_values.odf.zip')
+        suma = sum(df['large_vals'])
+        self.assertEqual(sum(df['large_vals']), sum(df2['large_vals']))
+        self.assertEqual(sum(df['large_vals']), -216868392221803)
+        self.assertEqual(sum(df['floats']), sum(df2['floats']))
+        self.assertEqual(sum(df['floats']), 3.9537558972732)
+
+        
+        with zipfile.ZipFile('testoutput' + '/data_special_values.odf.zip', 'r') as zip_file:
+            self.assertTrue('data.csv' in zip_file.namelist())
+            self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertTrue('odf-version.json' in zip_file.namelist())
+            rootnew=ET.fromstring(zip_file.read('metadata.xml'))
+        with zipfile.ZipFile('testdata/data_special_values.odf.zip', 'r') as zip_file:    
+            rootorig=ET.fromstring(zip_file.read('metadata.xml'))
+
+        # Test for element equality
+        self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
+        if (ET.tostring(rootorig) != ET.tostring(rootnew)):
+            xml_tree_equal(rootorig, rootnew)
+         
+        # Check equality of CSV
+        self.assertTrue(csvs_equal('testdata/data_special_values.odf.zip','testoutput' + '/data_special_values.odf.zip' ))
+
+
+    ############ Tests for old version
+    def test_write_odf_standard_v100(self):
+        os.makedirs('testoutput', exist_ok=True)
+        
+        df = odf.read_odf(filepath = 'testdata/data.zip')
+        
+        
+        odf.write_odf(x = df, filepath ='testoutput' + '/data.zip', odf_version = "1.0.0")
         
         with zipfile.ZipFile('testoutput' + '/data.zip', 'r') as zip_file:
             self.assertTrue('data.csv' in zip_file.namelist())
             self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertFalse('odf-version.json' in zip_file.namelist())
             rootnew=ET.fromstring(zip_file.read('metadata.xml'))
         with zipfile.ZipFile('testdata/data.zip', 'r') as zip_file:    
             rootorig=ET.fromstring(zip_file.read('metadata.xml'))
@@ -135,18 +364,19 @@ class TestWriteODF(unittest.TestCase):
         # Check equality of CSV
         self.assertTrue(csvs_equal('testdata/data.zip','testoutput' + '/data.zip' ))
             
-    def test_write_odf_default_lang(self):
+    def test_write_odf_default_lang_v100(self):
         
         os.makedirs('testoutput', exist_ok=True)
         
-        df = odf.read_odf(path = 'testdata/data_with_default.zip')
+        df = odf.read_odf(filepath = 'testdata/data_with_default.zip')
         
         
-        odf.write_odf(x = df, path='testoutput' + '/data_with_default.zip')
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_with_default.zip', odf_version = "1.0.0")
         
         with zipfile.ZipFile('testoutput' + '/data_with_default.zip', 'r') as zip_file:
             self.assertTrue('data.csv' in zip_file.namelist())
             self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertFalse('odf-version.json' in zip_file.namelist())
             rootnew=ET.fromstring(zip_file.read('metadata.xml'))
         with zipfile.ZipFile('testdata/data_with_default.zip', 'r') as zip_file:    
             rootorig=ET.fromstring(zip_file.read('metadata.xml'))
@@ -160,19 +390,20 @@ class TestWriteODF(unittest.TestCase):
         self.assertTrue(csvs_equal('testdata/data_with_default.zip','testoutput' + '/data_with_default.zip' ))
         
         
-    def test_write_odf_with_missings(self):
+    def test_write_odf_with_missings_v100(self):
         
 
         os.makedirs('testoutput', exist_ok=True)
         
-        df = odf.read_odf(path = 'testdata/data_with_missings.zip')
+        df = odf.read_odf(filepath = 'testdata/data_with_missings.zip')
         
         
-        odf.write_odf(x = df, path='testoutput' + '/data_with_missings.zip')
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_with_missings.zip', odf_version = "1.0.0")
         
         with zipfile.ZipFile('testoutput' + '/data_with_missings.zip', 'r') as zip_file:
             self.assertTrue('data.csv' in zip_file.namelist())
             self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertFalse('odf-version.json' in zip_file.namelist())
             rootnew=ET.fromstring(zip_file.read('metadata.xml'))
         with zipfile.ZipFile('testdata/data_with_missings.zip', 'r') as zip_file:    
             rootorig=ET.fromstring(zip_file.read('metadata.xml'))
@@ -185,17 +416,18 @@ class TestWriteODF(unittest.TestCase):
         # Check equality of CSV
         self.assertTrue(csvs_equal('testdata/data_with_missings.zip','testoutput' + '/data_with_missings.zip' ))
 
-    def test_write_odf_lang_standard(self):
+    def test_write_odf_lang_standard_v100(self):
         os.makedirs('testoutput', exist_ok=True)
         
-        df = odf.read_odf(path = 'testdata/data.zip')
+        df = odf.read_odf(filepath = 'testdata/data.zip')
         
         
-        odf.write_odf(x = df, path='testoutput' + '/data_de.zip', languages = "de")
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_de.zip', odf_version = "1.0.0", languages = "de")
         
         with zipfile.ZipFile('testoutput' + '/data_de.zip', 'r') as zip_file:
             self.assertTrue('data.csv' in zip_file.namelist())
             self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertFalse('odf-version.json' in zip_file.namelist())
             rootnew=ET.fromstring(zip_file.read('metadata.xml'))
         with zipfile.ZipFile('testdata/data_de.zip', 'r') as zip_file:    
             rootorig=ET.fromstring(zip_file.read('metadata.xml'))
@@ -207,62 +439,66 @@ class TestWriteODF(unittest.TestCase):
         # Check equality of CSV
         self.assertTrue(csvs_equal('testdata/data.zip','testoutput' + '/data_de.zip' ))
 
-    def test_write_odf_lang_standard2(self):
-         os.makedirs('testoutput', exist_ok=True)
-         
-         df = odf.read_odf(path = 'testdata/data.zip')
-         
-         
-         odf.write_odf(x = df, path='testoutput' + '/data_de.zip', languages = ["de"])
-         
-         with zipfile.ZipFile('testoutput' + '/data_de.zip', 'r') as zip_file:
-             self.assertTrue('data.csv' in zip_file.namelist())
-             self.assertTrue('metadata.xml' in zip_file.namelist())
-             rootnew=ET.fromstring(zip_file.read('metadata.xml'))
-         with zipfile.ZipFile('testdata/data_de.zip', 'r') as zip_file:    
-             rootorig=ET.fromstring(zip_file.read('metadata.xml'))
-
-         # Test for element equality
-         self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
-         if (ET.tostring(rootorig) != ET.tostring(rootnew)):
-             xml_tree_equal(rootorig, rootnew)
-         # Check equality of CSV
-         self.assertTrue(csvs_equal('testdata/data.zip','testoutput' + '/data_de.zip' ))
-
-    def test_write_odf_lang_default(self):
+    def test_write_odf_lang_standard2_v100(self):
         os.makedirs('testoutput', exist_ok=True)
+
+        df = odf.read_odf(filepath = 'testdata/data.zip')
+
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_de.zip', languages = ["de"], odf_version = "1.0.0")
         
-        df = odf.read_odf(path = 'testdata/data_with_default.zip')
-        
-        
-        odf.write_odf(x = df, path='testoutput' + '/data_en_none.zip', languages = ["en", ''])
-        
-        with zipfile.ZipFile('testoutput' + '/data_en_none.zip', 'r') as zip_file:
-            #self.assertTrue('data.csv' in zip_file.namelist())
-            #self.assertTrue('metadata.xml' in zip_file.namelist())
+        with zipfile.ZipFile('testoutput' + '/data_de.zip', 'r') as zip_file:
+            
+            self.assertTrue('data.csv' in zip_file.namelist())
+            self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertFalse('odf-version.json' in zip_file.namelist())
             rootnew=ET.fromstring(zip_file.read('metadata.xml'))
-        with zipfile.ZipFile('testdata/data_en_none.zip', 'r') as zip_file:    
+            self.assertFalse('odf-version.json' in zip_file.namelist())
+        with zipfile.ZipFile('testdata/data_de.zip', 'r') as zip_file:    
             rootorig=ET.fromstring(zip_file.read('metadata.xml'))
 
         # Test for element equality
         self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
         if (ET.tostring(rootorig) != ET.tostring(rootnew)):
             xml_tree_equal(rootorig, rootnew)
-            
         # Check equality of CSV
-        self.assertTrue(csvs_equal('testdata/data_with_default.zip','testoutput' + '/data_en_none.zip' ))
-            
-    def test_write_odf_lang_default2(self):
+        self.assertTrue(csvs_equal('testdata/data.zip','testoutput' + '/data_de.zip' ))
+
+    def test_write_odf_lang_default_v100(self):
         os.makedirs('testoutput', exist_ok=True)
         
-        df = odf.read_odf(path = 'testdata/data_with_default.zip')
+        df = odf.read_odf(filepath = 'testdata/data_with_default.zip')
         
         
-        odf.write_odf(x = df, path='testoutput' + '/data_en_none.zip', languages = ["en", None])
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_en_none.zip', languages = ["en", ''], odf_version = "1.0.0")
         
         with zipfile.ZipFile('testoutput' + '/data_en_none.zip', 'r') as zip_file:
             self.assertTrue('data.csv' in zip_file.namelist())
             self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertFalse('odf-version.json' in zip_file.namelist())
+            rootnew=ET.fromstring(zip_file.read('metadata.xml'))
+        with zipfile.ZipFile('testdata/data_en_none.zip', 'r') as zip_file:    
+            rootorig=ET.fromstring(zip_file.read('metadata.xml'))
+
+        # Test for element equality
+        self.assertEqual(ET.tostring(rootorig), ET.tostring(rootnew))
+        if (ET.tostring(rootorig) != ET.tostring(rootnew)):
+            xml_tree_equal(rootorig, rootnew)
+            
+        # Check equality of CSV
+        self.assertTrue(csvs_equal('testdata/data_with_default.zip','testoutput' + '/data_en_none.zip' ))
+            
+    def test_write_odf_lang_default2_v100(self):
+        os.makedirs('testoutput', exist_ok=True)
+        
+        df = odf.read_odf(filepath = 'testdata/data_with_default.zip')
+        
+        
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_en_none.zip', languages = ["en", None], odf_version = "1.0.0")
+        
+        with zipfile.ZipFile('testoutput' + '/data_en_none.zip', 'r') as zip_file:
+            self.assertTrue('data.csv' in zip_file.namelist())
+            self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertFalse('odf-version.json' in zip_file.namelist())
             rootnew=ET.fromstring(zip_file.read('metadata.xml'))
         with zipfile.ZipFile('testdata/data_en_none.zip', 'r') as zip_file:    
             rootorig=ET.fromstring(zip_file.read('metadata.xml'))
@@ -275,17 +511,18 @@ class TestWriteODF(unittest.TestCase):
         # Check equality of CSV
         self.assertTrue(csvs_equal('testdata/data_with_default.zip','testoutput' + '/data_en_none.zip' ))
 
-    def test_write_odf_lang_with_missing(self):
+    def test_write_odf_lang_with_missing_v100(self):
         os.makedirs('testoutput', exist_ok=True)
         
-        df = odf.read_odf(path = 'testdata/data_with_missings.zip')
+        df = odf.read_odf(filepath = 'testdata/data_with_missings.zip')
         
         
-        odf.write_odf(x = df, path='testoutput' + '/data_with_missings_en.zip', languages = ["en"])
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_with_missings_en.zip', languages = ["en"], odf_version = "1.0.0")
         
         with zipfile.ZipFile('testoutput' + '/data_with_missings_en.zip', 'r') as zip_file:
             self.assertTrue('data.csv' in zip_file.namelist())
             self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertFalse('odf-version.json' in zip_file.namelist())
             rootnew=ET.fromstring(zip_file.read('metadata.xml'))
         with zipfile.ZipFile('testdata/data_with_missings_en.zip', 'r') as zip_file:    
             rootorig=ET.fromstring(zip_file.read('metadata.xml'))
@@ -298,15 +535,15 @@ class TestWriteODF(unittest.TestCase):
         # Check equality of CSV
         self.assertTrue(csvs_equal('testdata/data_with_missings.zip','testoutput' + '/data_with_missings_en.zip' ))
         
-    def test_write_odf_with_special_values(self):
+    def test_write_odf_with_special_values_v100(self):
         os.makedirs('testoutput', exist_ok=True)
         
-        df = odf.read_odf(path = 'testdata/data_special_values.zip')
+        df = odf.read_odf(filepath = 'testdata/data_special_values.zip')
         
         
-        odf.write_odf(x = df, path='testoutput' + '/data_special_values.zip')
+        odf.write_odf(x = df, filepath ='testoutput' + '/data_special_values.zip', odf_version = "1.0.0")
         
-        df2 = odf.read_odf(path = 'testoutput' + '/data_special_values.zip')
+        df2 = odf.read_odf(filepath = 'testoutput' + '/data_special_values.zip')
         suma = sum(df['large_vals'])
         self.assertEqual(sum(df['large_vals']), sum(df2['large_vals']))
         self.assertEqual(sum(df['large_vals']), -216868392221803)
@@ -317,6 +554,7 @@ class TestWriteODF(unittest.TestCase):
         with zipfile.ZipFile('testoutput' + '/data_special_values.zip', 'r') as zip_file:
             self.assertTrue('data.csv' in zip_file.namelist())
             self.assertTrue('metadata.xml' in zip_file.namelist())
+            self.assertFalse('odf-version.json' in zip_file.namelist())
             rootnew=ET.fromstring(zip_file.read('metadata.xml'))
         with zipfile.ZipFile('testdata/data_special_values.zip', 'r') as zip_file:    
             rootorig=ET.fromstring(zip_file.read('metadata.xml'))
@@ -328,7 +566,9 @@ class TestWriteODF(unittest.TestCase):
          
         # Check equality of CSV
         self.assertTrue(csvs_equal('testdata/data_special_values.zip','testoutput' + '/data_special_values.zip' ))
-              
+          
+
+
             
 if __name__ == '__main__':
     unittest.main()

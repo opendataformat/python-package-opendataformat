@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     
 setup(
     name='opendataformat',
-    version='1.0.1',
+    version='1.1.0',
     packages=find_packages(),
     include_package_data=True,  # Include package data specified in MANIFEST.in
     package_data={

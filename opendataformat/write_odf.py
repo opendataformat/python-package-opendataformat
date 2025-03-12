@@ -14,11 +14,10 @@ import zipfile
 import xml.dom.minidom
 import csv
 import numpy as np
-"""
+import json
 
-"""
 
-def write_odf(x, path, languages = "all"):
+def write_odf(x, filepath, languages = "all", odf_version = "1.1.0"):
     """
     Write a pandas DataFrame or Series to an Open Data Format (ODF) file.
 
@@ -30,8 +29,8 @@ def write_odf(x, path, languages = "all"):
     ----------
     x : pandas.DataFrame or pandas.Series
         The pandas object to be saved to the ODF file. It should have metadata stored in the `attrs` attribute for inclusion in the output file metadata.xml.
-    path : str
-        The file path (including filename) where the ODF file will be saved. Ensure the path ends with `.zip` to specify the correct file format.
+    filepath : str
+        The file path (including filename) where the ODF file will be saved. Ensure the path ends with `.odf.zip` (or .zip for ODF version 1.0.0) to specify the correct file format.
     languages : str or list of str, default "all"
         Specifies which language(s) of metadata to include in the ODF file.
         Options include:
@@ -63,7 +62,7 @@ def write_odf(x, path, languages = "all"):
     >>> import opendataformat as odf
     >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]})
     >>> df.attrs = {"label_en": "English Label", "label_de": "German Label", "description_en": "Example dataset"}
-    >>> odf.write_odf(df, "output.zip")
+    >>> odf.write_odf(df, "output.odf.zip")
 
     Write a DataFrame to an ODF file, filtering metadata by language:
 
@@ -73,32 +72,34 @@ def write_odf(x, path, languages = "all"):
 
     >>> odf.write_odf(df, "output.zip", languages="all")
     """
-
+    # Raise error if input is not a pandas dataframe
     if (not isinstance(x, pd.DataFrame)):
         raise TypeError("Input not a pandas.core.frame.DataFrame")
-    path = os.path.realpath(path)
-    if not path.endswith(".zip"):
-        path = path + ".zip"
+    filepath = os.path.realpath(filepath)
+    
+    # add extension if missing (.zip in case of odf_version = 1.0.0 and .odf.zip for later version)
+    if not filepath.endswith(".zip"):
+        if odf_version == "1.0.0" or filepath.endswith(".odf"):
+            filepath = filepath + ".zip"
+        else:
+            filepath = filepath + ".odf.zip"
 
     # convert anlanguages to a list or if languages = ["all"] unlist it
     if languages != "all" and not isinstance(languages, list):
         languages = [languages]
-    
+    # if languages = ["all"] unlist it
     if isinstance(languages, list) and len(languages) == 1:
         if languages[0] == "all":
             languages = languages[0]
-            
+    # if None or '' in languages add metadatafields without language tag       
     if isinstance(languages, list) and (None in languages or '' in languages):
         languages += ["label", "labels", "description"]
-
-    # Extract the filename from the path using os.path.basename (cross-platform)
-    filename = os.path.basename(path)
 
     # Get the path of the system's temporary directory
     temp_dir = tempfile.gettempdir()
 
-    # Create the full path for the temporary directory based on filename
-    temp_subdir = os.path.join(temp_dir, filename.split('.')[0])
+    # Create the full path for the temporary directory for odf output components
+    temp_subdir = os.path.join(temp_dir, '/odf_temp')
 
     # Remove the directory if it already exists
     if os.path.exists(temp_subdir):
@@ -116,14 +117,33 @@ def write_odf(x, path, languages = "all"):
             return np.format_float_positional(x, trim='-')
         return x
     
-    x_reformatted = x.applymap(custom_formatter)
+    x_reformatted = x.map(custom_formatter)
     
     # re-add the attributes
     for col in list(x.columns):
         x_reformatted[col].attrs = x[col].attrs
     x = x_reformatted
+
+    vers_major = int(odf_version.split('.')[0])
+    vers_minor = int(odf_version.split('.')[1])
+    vers_patch = int(odf_version.split('.')[2])
+    # write odf-version.json file if version is 1.1.0 or higher
+    if (vers_major == 1 and vers_minor >=1) or vers_major >= 2:
+        # define version file as dictionary
+        version_file = {
+            "fileType": "opendataformat",
+            "version": odf_version,
+            "files": {
+            "data": "data.csv",
+            "metadata": "metadata.xml"
+            }
+        }
+        # Write version file
+        with open(temp_subdir + '/odf-version.json', "w") as f:
+            json.dump(version_file, f, indent=2)  # Pretty formatting with indent
+
     # write raw data as csv to the output folder
-    x.to_csv(temp_dir + "/" + filename.split('.')[0] + "/data.csv", 
+    x.to_csv(temp_subdir + "/data.csv", 
              index = False,
              encoding = 'utf-8',
              quotechar='"',
@@ -295,19 +315,19 @@ def write_odf(x, path, languages = "all"):
     pretty_xml = dom.toprettyxml(indent="  ")
     
     # write xml to a file
-    with open(temp_dir + "/" + filename.split('.')[0] + "/metadata.xml", "w", encoding = "UTF-8") as f:
+    with open(temp_subdir + "/metadata.xml", "w", encoding = "UTF-8") as f:
         f.write(pretty_xml)
     
 
-    dataset_dir = os.path.join(temp_dir, filename.split('.')[0])
-    zip_path = os.path.join(path)
-
     # Create a zip file and add files to it
-    with zipfile.ZipFile(zip_path, 'w') as zipf:
-        zipf.write(os.path.join(dataset_dir, 'metadata.xml'), arcname='metadata.xml')
-        zipf.write(os.path.join(dataset_dir, 'data.csv'), arcname='data.csv')
+    with zipfile.ZipFile(filepath, 'w') as zipf:
+        zipf.write(os.path.join(temp_subdir, 'metadata.xml'), arcname='metadata.xml')
+        zipf.write(os.path.join(temp_subdir, 'data.csv'), arcname='data.csv')
+        if (vers_major == 1 and vers_minor >=1) or vers_major >= 2:
+            zipf.write(os.path.join(temp_subdir, 'odf-version.json'), arcname='odf-version.json')
 
-    print(f"File sucessfully written to {zip_path}.")
+
+    print(f"File sucessfully written to {filepath}.")
     
     
     

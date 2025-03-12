@@ -181,14 +181,14 @@ class TestDocuODF(unittest.TestCase):
                 'url': ''
             }
         }
-        df = odf.read_odf(path = 'testdata/data.zip')
+        df = odf.read_odf(filepath = 'testdata/data.zip')
         odf.docu_odf(df)  
         df = odf.read_odf('testdata/data_with_default.zip')
         odf.docu_odf(df)  
         df = odf.read_odf('testdata/data_with_missings.zip')
         odf.docu_odf(df)  
         
-        df = odf.read_odf(path = 'testdata/data.zip')
+        df = odf.read_odf(filepath = 'testdata/data.zip')
         metadict = odf.docu_odf(df['bap87'])  
         self.assertEqual(metadict, expected_metadata['bap87'])
         df = odf.read_odf('testdata/data_with_default.zip')
@@ -197,7 +197,7 @@ class TestDocuODF(unittest.TestCase):
         odf.docu_odf(df['bap87'])  
     def test_write_odf_lang(self):
         
-        df = odf.read_odf(path = 'testdata/data.zip')
+        df = odf.read_odf(filepath = 'testdata/data.zip')
         odf.docu_odf(df, languages = 'de')  
         df = odf.read_odf('testdata/data_with_default.zip')
         odf.docu_odf(df, languages = [None, 'en'])  
@@ -205,7 +205,7 @@ class TestDocuODF(unittest.TestCase):
         df = odf.read_odf('testdata/data_with_missings.zip')
         odf.docu_odf(df, languages = ['de', 'en'])  
         
-        df = odf.read_odf(path = 'testdata/data.zip')
+        df = odf.read_odf(filepath = 'testdata/data.zip')
         odf.docu_odf(df['bap87'], languages = ['de'])  
         df = odf.read_odf('testdata/data_with_default.zip')
         odf.docu_odf(df['bap87'], languages = [None, 'en'])  
@@ -214,7 +214,7 @@ class TestDocuODF(unittest.TestCase):
         
     def test_write_odf_metadata(self):
         self.maxDiff = None
-        df = odf.read_odf(path = 'testdata/data.zip')
+        df = odf.read_odf(filepath = 'testdata/data.zip')
         self.assertEqual(odf.docu_odf(df, metadata = 'labels'), 
                          {'label_en': 'Data from individual questionnaires 2010',
                           'label_de': 'Daten vom Personenfragebogen 2010'})
@@ -230,7 +230,7 @@ class TestDocuODF(unittest.TestCase):
         self.assertEqual(odf.docu_odf(df, metadata = 'Label'),
                          'Data from individual questionnaires 2010')
         
-        df = odf.read_odf(path = 'testdata/data.zip')
+        df = odf.read_odf(filepath = 'testdata/data.zip')
         self.assertEqual(odf.docu_odf(x = df['bap87'], metadata = 'Label'),  
                          {'label_en': 'Current Health', 'label_de': 'Gesundheitszustand gegenwärtig'})  
         self.assertEqual(odf.docu_odf(x = df['bap87'], metadata = 'type'), 
@@ -269,7 +269,7 @@ class TestDocuODF(unittest.TestCase):
         
     def test_write_odf_metadata_lang(self):
         self.maxDiff = None
-        df = odf.read_odf(path = 'testdata/data.zip')
+        df = odf.read_odf(filepath = 'testdata/data.zip')
         self.assertEqual(odf.docu_odf(df, metadata = 'labels', languages = 'de'),
                          'Daten vom Personenfragebogen 2010')
         self.assertEqual(odf.docu_odf(df, metadata = 'type', languages = ['en', 'de']), 'Not found')
@@ -281,7 +281,7 @@ class TestDocuODF(unittest.TestCase):
         self.assertEqual(odf.docu_odf(df, metadata = 'Label', languages = ['de']),
                          'Not found')
         
-        df = odf.read_odf(path = 'testdata/data.zip')
+        df = odf.read_odf(filepath = 'testdata/data.zip')
         self.assertEqual(odf.docu_odf(x = df['bap87'], metadata = 'Label', languages = 'en'),  
                          'Current Health')  
         self.assertEqual(odf.docu_odf(x = df['bap87'], metadata = 'type', languages = 'fr'), 
